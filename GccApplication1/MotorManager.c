@@ -280,52 +280,65 @@ void PrintCommStatus(int CommStatus) {
 void AdjustSpeed(int expectedR, int expectedL) {
 	// RIGHT_MOTOR
 	//   Forward：0 - 1023  Backward：1024 - 2047
-	int realR = GetCurrentSpeed(RIGHT_MOTOR);
-	int diffR = (expectedR - realR);
-	int adjustedR = (expectedR + diffR);
+// mm mod0731 start
+	//int realR = GetCurrentSpeed(RIGHT_MOTOR);
+	//int diffR = (expectedR - realR);
+	//int adjustedR = (expectedR + diffR);
+	GetCurrentSpeed(RIGHT_MOTOR);
+	int adjustedR = expectedR;
+// mm mod0731 end
 	
-	// Range check
-	if (expectedR < 1024) {
-		if (adjustedR < 0) {
-			adjustedR = 0;
-		}
-		else if (adjustedR > 1023) {
-			adjustedR = 1023;
-		}	
-	}
-	else {
-		if (adjustedR < 1024) {
-			adjustedR = 1024;
-		}
-		else if (adjustedR > 2047) {
-			adjustedR = 2047;
-		}
-	}
+// mm del0731 start
+	//// Range check
+	//if (expectedR < 1024) {
+	//	if (adjustedR < 0) {
+	//		adjustedR = 0;
+	//	}
+	//	else if (adjustedR > 1023) {
+	//		adjustedR = 1023;
+	//	}	
+	//}
+	//else {
+	//	if (adjustedR < 1024) {
+	//		adjustedR = 1024;
+	//	}
+	//	else if (adjustedR > 2047) {
+	//		adjustedR = 2047;
+	//	}
+	//}
+// mm del0731 end
 
 	// LEFT_MOTOR
 	//   Forward：1024 - 2047  Backward：0 - 1023
-	int realL = GetCurrentSpeed(LEFT_MOTOR);
-	int diffL = (expectedL - realL);
-	int adjustedL = (expectedL + diffL);
+// mm mod0731 start
+	//int realL = GetCurrentSpeed(LEFT_MOTOR);
+	//int diffL = (expectedL - realL);
+	//int adjustedL = (expectedL + diffL);
+	GetCurrentSpeed(LEFT_MOTOR);
+	int adjustedL = expectedL;
+// mm mod0731 end
+
+// mm del0731 start
+	//// Range check
+	//if (expectedR > 1023) {
+	//	if (adjustedL < 1024) {
+	//		adjustedL = 1024;
+	//	}
+	//	else if (adjustedL > 2047) {
+	//		adjustedL = 2047;
+	//	}
+	//}
+	//else {
+	//	if (adjustedL < 0) {
+	//		adjustedL = 0;
+	//	}
+	//	else if (adjustedL > 1023) {
+	//		adjustedL = 1023;
+	//	}
+	//}
+// mm del0731 end
 	
-	// Range check
-	if (expectedR > 1023) {
-		if (adjustedL < 1024) {
-			adjustedL = 1024;
-		}
-		else if (adjustedL > 2047) {
-			adjustedL = 2047;
-		}
-	}
-	else {
-		if (adjustedL < 0) {
-			adjustedL = 0;
-		}
-		else if (adjustedL > 1023) {
-			adjustedL = 1023;
-		}
-	}
-	
+	printf("Requested speed is (Right, Left) = (%d, %d)\n", adjustedL, adjustedR);
 	MotorControl(RIGHT_MOTOR, adjustedR);
 	MotorControl(LEFT_MOTOR,  adjustedL);
 }
