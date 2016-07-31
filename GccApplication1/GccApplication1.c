@@ -158,7 +158,7 @@ int mCurrentAction = MOVE_SELECTION_TYPE_STRAIGHT;
 int mBeforeMoveState = MOVE_SELECTION_TYPE_STRAIGHT;
 
 // IR Sensor 
-unsigned int IR[ADC_PORT_8 + 1] = {0,0,0,0,0,0,0,0,0};
+unsigned int IR[ADC_PORT_6 + 1] = {0,0,0,0,0,0,0};
 
 int mMoveCount = 0;
 
@@ -537,8 +537,7 @@ int decideMoveAction(void) {
 void getSensors(void) {
     ReadIRSensors(IR);
 
-    printf("sensor %3d: %3d: %3d: %3d: %3d: %3d: %3d: %3d \r\n",
-           IR[4], IR[1], IR[5], IR[2], IR[6], IR[3], IR[7], IR[8]);
+    printf("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n", IR[4], IR[1], IR[5], IR[2], IR[6], IR[3]);
 }
 
 int getState(void) {
@@ -559,10 +558,10 @@ void updateAction(int pre_state, int change_state) {
 int getAction(void) {
     int ret = 0;
     
-    int i_state[ADC_PORT_8 + 1];
+    int i_state[ADC_PORT_6 + 1];
     
     int dbgFlag = 1;//DBG
-    for (int i = ADC_PORT_1; i <= ADC_PORT_8; i++) {
+    for (int i = ADC_PORT_1; i <= ADC_PORT_6; i++) {
         if ( IR[i] >= COMPARE_VALUE ) {
             i_state[i] = LINE_STATE_BLACK;
         } else {

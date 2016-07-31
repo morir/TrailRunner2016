@@ -19,8 +19,6 @@
 #define     ADC_PORT_4  4
 #define     ADC_PORT_5  5
 #define     ADC_PORT_6  6
-#define     ADC_PORT_7  7
-#define     ADC_PORT_8  8
 
 //#define COMPARE_VALUE 450//450
 #define COMPARE_VALUE 300//450

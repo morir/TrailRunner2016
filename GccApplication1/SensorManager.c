@@ -7,7 +7,7 @@
 
 #include "SensorManager.h"
 
-#define IR_SIZE ADC_PORT_8 + 1
+#define IR_SIZE ADC_PORT_6 + 1
 #define DBG 0
 
 void timer_init(void);
@@ -50,7 +50,7 @@ unsigned int ReadIRSensor(unsigned int ch) {
 
 void ReadIRSensors(unsigned int * sensors) {
     unsigned int i = 0;
-    for (i = ADC_PORT_1; i <= ADC_PORT_8; i++) {
+    for (i = ADC_PORT_1; i <= ADC_PORT_6; i++) {
         sensors[i] = ReadIRSensor(i);
     }
     return;
