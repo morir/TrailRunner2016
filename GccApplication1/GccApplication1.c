@@ -537,7 +537,8 @@ int decideMoveAction(void) {
 void getSensors(void) {
     ReadIRSensors(IR);
 
-    printf("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n", IR[4], IR[1], IR[5], IR[2], IR[6], IR[3]);
+    printf("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
+	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
 }
 
 int getState(void) {
@@ -969,705 +970,705 @@ int getAction(void) {
 int isSensor_000000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_000001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_000010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_000011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_000100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_000101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_000110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_000111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_001000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_001001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_001010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_001011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_001100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_001101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_001110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_001111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_010000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_010001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_010010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_010011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_010100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_010101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_010110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_010111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_011000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_011001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_011010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_011011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_011100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_011101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_011110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_011111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_100000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_100001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_100010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_100011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_100100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_100101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_100110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_100111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_101000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_101001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_101010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_101011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_101100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_101101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_101110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_101111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_110000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_110001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_110010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_110011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_110100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_110101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_110110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_110111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_111000(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_111001(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_111010(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_111011(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_111100(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_111101(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_WHITE) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 int isSensor_111110(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_WHITE);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
 }
 
 int isSensor_111111(int *sensor)
 {
 	return
-		(sensor[ADC_PORT_4] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_1] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_5] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_2] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_6] == LINE_STATE_BLACK) &&
-		(sensor[ADC_PORT_3] == LINE_STATE_BLACK);
+		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[CENTER] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
+		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
+		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
 }
 
 void executeFinalAction(void)
