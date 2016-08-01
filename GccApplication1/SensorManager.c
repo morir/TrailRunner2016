@@ -71,10 +71,12 @@ ISR(TIMER1_COMPA_vect) {
     
     ReadIRSensors(IRArrays);
     if (DBG) {
-        printf( "PORT_1:%d\r\n", IR[ADC_PORT_1]);
-        printf( "PORT_2:%d\r\n", IR[ADC_PORT_2]);
-        printf( "PORT_3:%d\r\n", IR[ADC_PORT_3]);
-        printf( "PORT_4:%d\r\n", IR[ADC_PORT_4]);
+        printf( "LEFT_OUTSIDE :%d\r\n", IR[LEFT_OUTSIDE]);
+        printf( "LEFT_INSIDE  :%d\r\n", IR[LEFT_INSIDE]);
+        printf( "CENTER       :%d\r\n", IR[CENTER]);
+        printf( "RIGHT_INSIDE :%d\r\n", IR[RIGHT_INSIDE]);
+        printf( "RIGHT_OUTSIDE:%d\r\n", IR[RIGHT_OUTSIDE]);
+        printf( "GOAL_JUDGE   :%d\r\n", IR[GOAL_JUDGE]);
     }
 }
 
