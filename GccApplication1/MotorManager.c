@@ -353,3 +353,61 @@ int GetCurrentSpeed(int id) {
 	printf("Current speed is %d\n", speed);
 	return speed;
 }
+
+void GetSpeedTest(void) {
+	// RIGHT_MOTOR
+	//   Forward：0 - 1023  Backward：1024 - 2047
+	// LEFT_MOTOR
+	//   Forward：1024 - 2047  Backward：0 - 1023
+	
+	int readValueR = 0;
+	int readValueL = 0;
+	
+	///// speed 300 /////
+	printf("Requested speed is (Left, Right) = (1324, 300)\n");
+	//MotorControl(RIGHT_MOTOR, 300);
+	dxl_write_byte(RIGHT_MOTOR, 32, 300 & 0xFF);
+	dxl_write_byte(RIGHT_MOTOR, 33, 300 & 0x7F);
+	//MotorControl(LEFT_MOTOR,  1324);
+	dxl_write_byte(LEFT_MOTOR, 32, 1324 & 0xFF);
+	dxl_write_byte(LEFT_MOTOR, 33, 1324 & 0x7F);
+    _delay_ms(2000);
+	
+	//readValueR = GetCurrentSpeed(RIGHT_MOTOR);
+	readValueR = (dxl_read_byte(RIGHT_MOTOR, 36) + (dxl_read_byte(RIGHT_MOTOR, 37) << 8));
+	//readValueL = GetCurrentSpeed(LEFT_MOTOR);
+	readValueR = (dxl_read_byte(LEFT_MOTOR, 36) + (dxl_read_byte(LEFT_MOTOR, 37) << 8));
+	printf("Current speed is (Left, Right) = (%d, %d)\n", readValueL, readValueR);
+	
+	///// speed 500 /////
+	printf("Requested speed is (Left, Right) = (1524, 500)\n");
+	//MotorControl(RIGHT_MOTOR, 500);
+	dxl_write_byte(RIGHT_MOTOR, 32, 500 & 0xFF);
+	dxl_write_byte(RIGHT_MOTOR, 33, 500 & 0x7F);
+	//MotorControl(LEFT_MOTOR,  1524);
+	dxl_write_byte(LEFT_MOTOR, 32, 1524 & 0xFF);
+	dxl_write_byte(LEFT_MOTOR, 33, 1524 & 0x7F);
+	_delay_ms(2000);
+		
+	//readValueR = GetCurrentSpeed(RIGHT_MOTOR);
+	readValueR = (dxl_read_byte(RIGHT_MOTOR, 36) + (dxl_read_byte(RIGHT_MOTOR, 37) << 8));
+	//readValueL = GetCurrentSpeed(LEFT_MOTOR);
+	readValueR = (dxl_read_byte(LEFT_MOTOR, 36) + (dxl_read_byte(LEFT_MOTOR, 37) << 8));
+	printf("Current speed is (Left, Right) = (%d, %d)\n", readValueL, readValueR);
+		
+	///// speed 700 /////
+	printf("Requested speed is (Left, Right) = (1724, 700)\n");
+	//MotorControl(RIGHT_MOTOR, 700);
+	dxl_write_byte(RIGHT_MOTOR, 32, 700 & 0xFF);
+	dxl_write_byte(RIGHT_MOTOR, 33, 700 & 0x7F);
+	//MotorControl(LEFT_MOTOR,  1724);
+	dxl_write_byte(LEFT_MOTOR, 32, 1724 & 0xFF);
+	dxl_write_byte(LEFT_MOTOR, 33, 1724 & 0x7F);
+	_delay_ms(2000);
+	
+	//readValueR = GetCurrentSpeed(RIGHT_MOTOR);
+	readValueR = (dxl_read_byte(RIGHT_MOTOR, 36) + (dxl_read_byte(RIGHT_MOTOR, 37) << 8));
+	//readValueL = GetCurrentSpeed(LEFT_MOTOR);
+	readValueR = (dxl_read_byte(LEFT_MOTOR, 36) + (dxl_read_byte(LEFT_MOTOR, 37) << 8));
+	printf("Current speed is (Left, Right) = (%d, %d)\n", readValueL, readValueR);
+}

@@ -229,45 +229,50 @@ int main(void) {
 				break;
 			}
 				
-            switch (state) {
-            //最初はここ。
-            case STATE_INIT:
-            	initMoveAction();
-                setState(STATE_STOP);
-                break;
-            //初期化の終わりもここ
-            case STATE_STOP:
-                // motor stop
-                Execute(MOVE_SELECTION_TYPE_STOP);
-                setState(STATE_START);
-                break;
-                
-            case STATE_START:
-                setState(STATE_MOVE);
-                break;
-            //実質ここから開始？
-            case STATE_MOVE:
-                setState(decideMoveAction());
-                break;
-                
-            case STATE_FIXED_MOVE:
-                FixedMotionACtion();
-                break;
-                
-            case STATE_TEST_MODE:
-                Execute(MOVE_SELECTION_TYPE_S_MOVE_10);
-                break;
-            
-            default:
-                setState(STATE_INIT);
-                break;
-            }
+            //switch (state) {
+            ////最初はここ。
+            //case STATE_INIT:
+            	//initMoveAction();
+                //setState(STATE_STOP);
+                //break;
+            ////初期化の終わりもここ
+            //case STATE_STOP:
+                //// motor stop
+                //Execute(MOVE_SELECTION_TYPE_STOP);
+                //setState(STATE_START);
+                //break;
+                //
+            //case STATE_START:
+                //setState(STATE_MOVE);
+                //break;
+            ////実質ここから開始？
+            //case STATE_MOVE:
+////                setState(decideMoveAction());
+                //break;
+                //
+            //case STATE_FIXED_MOVE:
+                //FixedMotionACtion();
+                //break;
+                //
+            //case STATE_TEST_MODE:
+                //Execute(MOVE_SELECTION_TYPE_S_MOVE_10);
+                //break;
+            //
+            //default:
+                //setState(STATE_INIT);
+                //break;
+			
+			break;
             //_delay_ms(DELAY_MSEC);
 //            _delay_us(50);
 //            _delay_us(100);
 //            _delay_ms(500);//DBG
         }
-    }
+     }
+           	initMoveAction();
+           	Execute(MOVE_SELECTION_TYPE_STOP);
+           	setState(STATE_MOVE);
+           	GetSpeedTest();
 }
 
 void split( char * s1 ) {

@@ -147,6 +147,7 @@ void PrintCommStatus(int CommStatus);
 
 void AdjustSpeed(int targetSpeedL, int targetSpeedR);
 int GetCurrentSpeed(int id);
+void GetSpeedTest(void);
 
 int mCount;
 
