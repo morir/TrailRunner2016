@@ -122,51 +122,63 @@ void setParamMoveAction(int right, int left) {
 }
 
 void StopMove(void) {
-	AdjustSpeed(1024, 0);
+    MotorControl( RIGHT_MOTOR, 1024 );
+    MotorControl( LEFT_MOTOR, 0 );
 }
 
 void StraightMove(void) {
-	AdjustSpeed(1623, 600);
+    MotorControl( RIGHT_MOTOR, 1623 ); //300 P_CCW_SPEED_NOMAL 1632
+    MotorControl( LEFT_MOTOR, 600 ); //300 P_CW_SPEED_NOMAL 609
 }
 
 void StraightLowMove(void) {
-	AdjustSpeed(1098, 75);
+	MotorControl( RIGHT_MOTOR, 1098 ); //300 P_CCW_SPEED_NOMAL 1632
+	MotorControl( LEFT_MOTOR, 75 ); //300 P_CW_SPEED_NOMAL 609
 }
 
 void StraightMoveRightShift(void) {
-	AdjustSpeed(1473, 500);
+    MotorControl( RIGHT_MOTOR, 1473 );//280 P_CCW_SPEED_TURN    1532
+    MotorControl( LEFT_MOTOR, 500 );//300 P_CW_SPEED_NOMAL    609
 }
 
 void StraightMoveLeftShift(void) {
-	AdjustSpeed(1523, 450);
+    MotorControl( RIGHT_MOTOR, 1523 );//300 P_CCW_SPEED_NOMAL   1632
+    MotorControl( LEFT_MOTOR, 450 );//280 P_CW_SPEED_TURN     509
 }
 
 void StraightMoveRightShift2(void) {
-	AdjustSpeed(1423, 500);
+    MotorControl( RIGHT_MOTOR, 1423 );//250 P_CCW_SPEED_TURN_2 1432
+    MotorControl( LEFT_MOTOR, 500 );//300 P_CW_SPEED_NOMAL    609
 }
 
 void StraightMoveLeftShift2(void) {
-	AdjustSpeed(1523, 400);
+    MotorControl( RIGHT_MOTOR, 1523 ); //300 P_CCW_SPEED_NOMAL 1632
+    MotorControl( LEFT_MOTOR, 400 ); //250 P_CW_SPEED_TURN_2 409
 }
 
 void TurnMoveRight(void) {
-	AdjustSpeed(400, 400);
+    MotorControl( RIGHT_MOTOR, 400 );//250 P_CW_SPEED_TURN 509
+    MotorControl( LEFT_MOTOR, 400 );//250 P_CW_SPEED_TURN 509
 }
 
 void TurnMoveLeft(void) {
-	AdjustSpeed(1424, 1424);
+    MotorControl( RIGHT_MOTOR, 1424 );//250 P_CCW_SPEED_TURN 1532
+    MotorControl( LEFT_MOTOR, 1424 );//250 P_CCW_SPEED_TURN 1532
 }
 
 void TurnLowMoveRight(void) {
-	AdjustSpeed(300, 300);
+    MotorControl( RIGHT_MOTOR, 300 );//200 P_CW_SPEED_TURN_2   409
+    MotorControl( LEFT_MOTOR, 300 );//200 P_CW_SPEED_TURN_2 409
 }
 
 void TurnLowMoveLeft(void) {
-	AdjustSpeed(1324, 1324);
+    MotorControl( RIGHT_MOTOR, 1324 );//200 P_CCW_SPEED_TURN_2 1432
+    MotorControl( LEFT_MOTOR, 1324 );//200 P_CCW_SPEED_TURN_2 1432
 }
 
 void BackMove(void) {
-	AdjustSpeed(250, 1273);
+    MotorControl( RIGHT_MOTOR, 250 ); //250 P_CW_SPEED_TURN 509
+    MotorControl( LEFT_MOTOR, 1273 ); //R250 P_CCW_SPEED_TURN 1532
 }
 
 void TestMode(void) {
