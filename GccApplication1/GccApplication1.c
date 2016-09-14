@@ -28,17 +28,7 @@
 #define LINE_STATE_BLACK    0//センサー値でラインが黒判定
 #define LINE_STATE_WHITE    1//センサー値でラインが黒判定
 
-// PID Param
-#define K_P     0.70     // P param 1.00：PID制御のパラメータ(実動作で合わせこんだので説明できません)
-#define K_I     0.50    // I param 5.00：PID制御のパラメータ(実動作で合わせこんだので説明できません)
-#define K_D     0.50  // D param 0.0003：PID制御のパラメータ(実動作で合わせこんだので説明できません)
-//↓この数値を大きくすると、直進及び少し曲がる時の速度があがる。
-#define pid_base 500   // base speed P_CW_SPEED_NOMAL 500
-#define pid_lim 30     // control value 30：PID制御のパラメータ(実動作で合わせこんだので説明できません)
-#define DELTA_T 0.002   // delta T 0.002：PID制御のパラメータ(実動作で合わせこんだので説明できません)
-//PID制御の計算結果で、差分が大きすぎるときの上限、下限値。
-//ベース速度に対してこの数値分までの+-を許容します
-#define offSet_val 250 //450;//300
+
 
 // START SW address
 #define SW_START 0x01   // Emergency Stop 未検証ですがトレイルのロボはこの設定不要だと思う
@@ -70,8 +60,6 @@ void setLED(void);
 void LED_on(int i);
 void LED_off(int i);
 
-void PID_ctlr_Update(int target_val, int sencer_val);
-
 // ------------------ Global Variables Definition ------------------
 
 // Serial Message Buf
@@ -102,10 +90,6 @@ float dGain =  120;  //Differential Gain
 int delay = 10;
 int32_t eInteg = 0;  //Integral accumulator
 int32_t ePrev  =0;   //Previous Error
-
-int diff[2]    = {0,0};
-int ret_val[2] = {0,0};
-float integral = 0.0;
 
 int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を入力することで、直進時のブレを抑制する制御を行う。
 
@@ -231,6 +215,8 @@ void initMoveAction(void) {
 */
 int decideMoveAction(void) {
     int ret_state = STATE_MOVE;//メインプログラムのステータス
+	int rightVal = 0;
+	int leftVal = 0;
 	
     getSensors();//現在のセンサー値を取得。
     int currentAction = mCurrentAction;//前回の判定を次の動作判定に使用する
@@ -247,9 +233,7 @@ int decideMoveAction(void) {
             nextAction = MOVE_SELECTION_TYPE_STRAIGHT;
         } else {
             nextAction = MOVE_SELECTION_TYPE_START;
-            diff[0] = 0;
-            diff[1] = 0;
-            integral = 0;
+            PID_reset_diff_integral();
         }
     	//次の動作判定を、更新(変更)する。
         updateAction(currentAction, nextAction);
@@ -261,8 +245,8 @@ int decideMoveAction(void) {
     case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
     case MOVE_SELECTION_TYPE_LEFTSIFT_1:
     case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-        PID_ctlr_Update(0, PID_ctlr);//PID制御の制御値を更新
-        setParamMoveAction(ret_val[0], ret_val[1]);//モーターの駆動指令
+        PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
+        setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
 
         nextAction = getAction();//現在のセンサー値を使って、次の動作を決定
 
@@ -270,15 +254,6 @@ int decideMoveAction(void) {
         updateAction(currentAction, nextAction);
         break;
 
-    //ラインを見失ったとき、直前の動作が直進ならここに入るはず。
-    //現状、ここに入る事は無いと思う。削除候補。
-    case MOVE_SELECTION_TYPE_BACK:
-        Execute(currentAction);
-        nextAction = getAction();
-        
-        updateAction(currentAction, nextAction);
-        break;
-        
     //右旋回用の分岐
     //一度、ここに入ると中央のセンサーが黒になるまでループし続ける。
     case MOVE_SELECTION_TYPE_RIGHTTURN:
@@ -300,9 +275,7 @@ int decideMoveAction(void) {
                 nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_2)
 			{
 				//中央４つのセンサーのいずれかが黒なら、以降の処理
-				diff[0] = 0;
-                diff[1] = 0;
-                integral = 0;
+				PID_reset_diff_integral();
 				Execute(MOVE_SELECTION_TYPE_LEFTTURN);//逆回転を実行して、旋回動作のブレーキ。
 				if (currentAction == MOVE_SELECTION_TYPE_RIGHTTURN) {
 					//旋回中から、ここに入ったらブレーキ時間を長い時間にする
@@ -345,9 +318,7 @@ int decideMoveAction(void) {
                 nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_1 ||
                 nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_2)
 			{
-				diff[0] = 0;
-				diff[1] = 0;
-				integral = 0;
+				PID_reset_diff_integral();
 				Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
 				if (currentAction == MOVE_SELECTION_TYPE_LEFTTURN) {
 					_delay_ms(100);
@@ -368,52 +339,6 @@ int decideMoveAction(void) {
         }
         break;
 
-    //両端が黒(中央が白)なら、ここに入るようにしている。
-    //実動作で、2015年ルールでも、ここに入ることは無いはず。
-    //今回、全黒は別の判定に変わるはずなので、ここに入る事は無い見込み。削除候補。
-    case MOVE_SELECTION_TYPE_SEARCH:
-        LOG_INFO("Search move\r\n");
-        LED_on(3);
-        LED_on(6);
-        nextAction = getAction();
-        if (nextAction != MOVE_SELECTION_TYPE_SEARCH ) {
-            // next state
-        } else {
-            
-            switch (mBeforeMoveState) {
-                case MOVE_SELECTION_TYPE_STRAIGHT:
-                    nextAction = MOVE_SELECTION_TYPE_BACK;
-                    break;
-                case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
-                case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
-                    nextAction = MOVE_SELECTION_TYPE_RIGHTTURN;
-                    break;
-                case MOVE_SELECTION_TYPE_LEFTSIFT_1:
-                case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-                    nextAction = MOVE_SELECTION_TYPE_LEFTTURN;
-                    break;
-                case MOVE_SELECTION_TYPE_RIGHTTURN:
-                    nextAction = MOVE_SELECTION_TYPE_LEFTTURN;
-                    break;
-                case MOVE_SELECTION_TYPE_LEFTTURN:
-                    nextAction = MOVE_SELECTION_TYPE_RIGHTTURN;
-                    break;
-                case MOVE_SELECTION_TYPE_SEARCH:
-                    nextAction = MOVE_SELECTION_TYPE_SEARCH;
-                    break;
-                default:
-                    nextAction = MOVE_SELECTION_TYPE_LEFTTURN;
-                    break;
-            }
-            
-        }
-        if (nextAction == MOVE_SELECTION_TYPE_SEARCH) {
-            LED_on(3);
-            LED_on(6);
-        }
-        updateAction(currentAction, nextAction);
-        break;
-
     //全白ならここ。
     //2015年のゴール判定用。
 	case MOVE_SELECTION_TYPE_STRAIGHT_2:
@@ -429,47 +354,6 @@ int decideMoveAction(void) {
 		updateAction(currentAction, nextAction);//次の動作を決定
 		break;
 
-    //両端が黒(中央が白)なら、ここに入るようにしている。
-    //実動作で、2015年ルールでも、ここに入ることは無いはず。
-    //今回、全黒は別の判定に変わるはずなので、ここに入る事は無い見込み。削除候補。
-    case MOVE_SELECTION_TYPE_S_MOVE_1:
-        // 1 1 0 0 1 1
-        // 1 0 0 0 1 1
-        // 1 1 0 0 0 1
-        // 1 0 0 0 0 1
-        LOG_INFO("Special Move 1\r\n");
-        nextAction = getAction();
-        updateAction(currentAction, nextAction);
-        break;
-    //現時点で未使用。削除候補。
-    case MOVE_SELECTION_TYPE_S_MOVE_2:
-        // 0 0 0 0 0 1
-        LOG_INFO("Special Move 2\r\n");
-        nextAction = getAction();
-        updateAction(currentAction, nextAction);
-        break;
-    //現時点で未使用。削除候補。
-    case MOVE_SELECTION_TYPE_S_MOVE_3:
-        // 1 0 0 0 0 0
-        LOG_INFO("Special Move 3\r\n");
-        nextAction = getAction();
-        updateAction(currentAction, nextAction);
-        break;
-    //判定に使っているが、実動作で存在しないパターンと思われる。
-    //削除候補。
-    case MOVE_SELECTION_TYPE_S_MOVE_4:
-        // 0 1 1 1 1 0
-        // 0 0 1 1 1 0
-        // 0 1 0 1 1 0
-        // 0 1 1 0 1 0
-        // 0 0 1 0 1 0
-        // 0 1 0 0 1 0
-        // 0 1 1 1 0 0
-        // 0 1 0 1 0 0
-        LOG_INFO( "Special Move 4\r\n" );
-        nextAction = getAction();
-        updateAction(currentAction, nextAction);
-        break;
     default:
         updateAction(0, MOVE_SELECTION_TYPE_STOP);
         ret_state = STATE_STOP;
@@ -884,46 +768,6 @@ void executeFinalAction(void)
     MotorControl( LEFT_MOTOR, 600 );
 	_delay_ms(500);
 	Execute(MOVE_SELECTION_TYPE_STOP);
-}
-
-/**
-* PID制御の制御値を更新
-* @brief PID制御の制御値を更新
-* @param (int target_val) 0固定
-* @param (int sencer_val) PID_ctlr
-* @return なし
-*/
-void PID_ctlr_Update(int target_val, int sencer_val) {
-    float p,i,d;
-    
-    diff[0] = diff[1];
-    diff[1] = sencer_val - target_val;
-    
-    integral += ((diff[0] + diff[1]) / 2.0 * DELTA_T);
-    
-    p = K_P * diff[1];
-    i = K_I * integral;
-    d = K_D * ((diff[1] - diff[0]) / DELTA_T);
-    
-    int MV = (int)(pid_lim * (p + i + d));
-    
-    LOG_INFO( "MV = %d\r\n", MV );
-    
-    int right_val = pid_base - MV;
-    int left_val = pid_base + MV;
-    if (right_val > pid_base + offSet_val) {//300
-        right_val = pid_base + offSet_val;
-    } else if (right_val < pid_base - offSet_val) {
-        right_val = pid_base - offSet_val;
-    }
-    if (left_val > pid_base + offSet_val) {
-        left_val = pid_base + offSet_val;
-    } else if (left_val < pid_base - offSet_val) {
-        left_val = pid_base - offSet_val;
-    }
-    
-    ret_val[0] = right_val + 1023;
-    ret_val[1] = left_val;
 }
 
 void initEmergencyStop(void) {

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 /** ログ出力を設定(定義値が有効な場合、ログを出力する) */
 #define LOG_FATAL_ON	//<! 致命的なエラーログの出力設定	：常時ON
 #define LOG_ERROR_ON	//<! エラーログの出力設定			：常時ON
