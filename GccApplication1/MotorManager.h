@@ -121,8 +121,6 @@
 #define MOVE_SELECTION_TYPE_S_MOVE_6    1106
 #define MOVE_SELECTION_TYPE_S_MOVE_7    1107
 #define MOVE_SELECTION_TYPE_S_MOVE_8    1108
-#define MOVE_SELECTION_TYPE_S_MOVE_9    1109	// Fixed Mode
-#define MOVE_SELECTION_TYPE_S_MOVE_10   1110	// Test Mode
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
@@ -141,7 +139,6 @@ void TurnMoveLeft(void);
 void TurnLowMoveRight(void);
 void TurnLowMoveLeft(void);
 void BackMove(void);
-void TestMode(void);
 void PrintErrorCode(void);
 void PrintCommStatus(int CommStatus);
 

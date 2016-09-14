@@ -7,6 +7,8 @@
 #include "MotorManager.h"
 #include "math.h"
 
+#include "DebugLog.h"
+
 #define DBG 1
 //#define _MOTOR_OFF_
 
@@ -35,7 +37,6 @@ void MotorInit(void) {
 void MotorControl(int id, int power) {
 #ifndef _MOTOR_OFF_
     int CommStatus = COMM_RXSUCCESS;
-//  printf( "%d %d\n", id, power );
     dxl_write_word( id, P_GOAL_SPEED_L, power );
     CommStatus = dxl_get_result();
     if( CommStatus == COMM_RXSUCCESS )
@@ -50,59 +51,57 @@ void Execute(int type) {
     switch (type) {
         case MOVE_SELECTION_TYPE_START:
         case MOVE_SELECTION_TYPE_STRAIGHT:
-            printf("Straight Move\r\n");
+            LOG_INFO("Straight Move\r\n");
             StraightMove();
             break;
         case MOVE_SELECTION_TYPE_STOP:
-            printf("Stop Move\r\n");
+            LOG_INFO("Stop Move\r\n");
 			StopMove();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
-            printf("Right Shift 1\r\n");
+            LOG_INFO("Right Shift 1\r\n");
             StraightMoveRightShift();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_1:
-            printf("Left Shift 1\r\n");
+            LOG_INFO("Left Shift 1\r\n");
             StraightMoveLeftShift();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
-            printf("Right Shift 2\r\n");
+            LOG_INFO("Right Shift 2\r\n");
             StraightMoveRightShift2();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-            printf("Left Shift 2\r\n");
+            LOG_INFO("Left Shift 2\r\n");
             StraightMoveLeftShift2();
             break;
         case MOVE_SELECTION_TYPE_RIGHTTURN:
-            printf("Right Turn\r\n");
+            LOG_INFO("Right Turn\r\n");
             TurnLowMoveRight();
             break;
         case MOVE_SELECTION_TYPE_LEFTTURN:
-            printf("Left Turn\r\n");
+            LOG_INFO("Left Turn\r\n");
             TurnLowMoveLeft();
             break;
         case MOVE_SELECTION_TYPE_RIGHTTURN_2:
-            printf("Right Turn 2\r\n");
+            LOG_INFO("Right Turn 2\r\n");
 			TurnMoveRight();
             break;
         case MOVE_SELECTION_TYPE_LEFTTURN_2:
-            printf("Left Turn 2\r\n");
+            LOG_INFO("Left Turn 2\r\n");
 			TurnMoveLeft();
             break;
         case MOVE_SELECTION_TYPE_BACK:
-            printf("Back Move\r\n");
+            LOG_INFO("Back Move\r\n");
             StopMove();
             _delay_ms(10);
             BackMove();
             _delay_ms(1000);
             break;
 		case MOVE_SELECTION_TYPE_STRAIGHT_2:
-            printf("Straight Low Move\r\n");
+            LOG_INFO("Straight Low Move\r\n");
             StraightLowMove();
             break;
 			
-        case MOVE_SELECTION_TYPE_S_MOVE_10:
-            TestMode();
         default:
             break;
     }
@@ -118,173 +117,109 @@ void setParamMoveAction(int right, int left) {
 	int correctionVal = 0;
     MotorControl( RIGHT_MOTOR, right );
     MotorControl( LEFT_MOTOR, left + correctionVal );
-    printf("RIGHT_MORTOR:%d  LEFT_MORTOR:%d \r\n",right, left);//DBG
+    LOG_DEBUG("RIGHT_MORTOR:%d  LEFT_MORTOR:%d \r\n",right, left);
 }
 
 void StopMove(void) {
-    MotorControl( RIGHT_MOTOR, 1024 );
-    MotorControl( LEFT_MOTOR, 0 );
+	AdjustSpeed(1024, 0);
 }
 
 void StraightMove(void) {
-    MotorControl( RIGHT_MOTOR, 1623 ); //300 P_CCW_SPEED_NOMAL 1632
-    MotorControl( LEFT_MOTOR, 600 ); //300 P_CW_SPEED_NOMAL 609
+	AdjustSpeed(1623, 600);
 }
 
 void StraightLowMove(void) {
-	MotorControl( RIGHT_MOTOR, 1098 ); //300 P_CCW_SPEED_NOMAL 1632
-	MotorControl( LEFT_MOTOR, 75 ); //300 P_CW_SPEED_NOMAL 609
+	AdjustSpeed(1098, 75);
 }
 
 void StraightMoveRightShift(void) {
-    MotorControl( RIGHT_MOTOR, 1473 );//280 P_CCW_SPEED_TURN    1532
-    MotorControl( LEFT_MOTOR, 500 );//300 P_CW_SPEED_NOMAL    609
+	AdjustSpeed(1473, 500);
 }
 
 void StraightMoveLeftShift(void) {
-    MotorControl( RIGHT_MOTOR, 1523 );//300 P_CCW_SPEED_NOMAL   1632
-    MotorControl( LEFT_MOTOR, 450 );//280 P_CW_SPEED_TURN     509
+	AdjustSpeed(1523, 450);
 }
 
 void StraightMoveRightShift2(void) {
-    MotorControl( RIGHT_MOTOR, 1423 );//250 P_CCW_SPEED_TURN_2 1432
-    MotorControl( LEFT_MOTOR, 500 );//300 P_CW_SPEED_NOMAL    609
+	AdjustSpeed(1423, 500);
 }
 
 void StraightMoveLeftShift2(void) {
-    MotorControl( RIGHT_MOTOR, 1523 ); //300 P_CCW_SPEED_NOMAL 1632
-    MotorControl( LEFT_MOTOR, 400 ); //250 P_CW_SPEED_TURN_2 409
+	AdjustSpeed(1523, 400);
 }
 
 void TurnMoveRight(void) {
-    MotorControl( RIGHT_MOTOR, 400 );//250 P_CW_SPEED_TURN 509
-    MotorControl( LEFT_MOTOR, 400 );//250 P_CW_SPEED_TURN 509
+	AdjustSpeed(400, 400);
 }
 
 void TurnMoveLeft(void) {
-    MotorControl( RIGHT_MOTOR, 1424 );//250 P_CCW_SPEED_TURN 1532
-    MotorControl( LEFT_MOTOR, 1424 );//250 P_CCW_SPEED_TURN 1532
+	AdjustSpeed(1424, 1424);
 }
 
 void TurnLowMoveRight(void) {
-    MotorControl( RIGHT_MOTOR, 300 );//200 P_CW_SPEED_TURN_2   409
-    MotorControl( LEFT_MOTOR, 300 );//200 P_CW_SPEED_TURN_2 409
+	AdjustSpeed(300, 300);
 }
 
 void TurnLowMoveLeft(void) {
-    MotorControl( RIGHT_MOTOR, 1324 );//200 P_CCW_SPEED_TURN_2 1432
-    MotorControl( LEFT_MOTOR, 1324 );//200 P_CCW_SPEED_TURN_2 1432
+	AdjustSpeed(1324, 1324);
 }
 
 void BackMove(void) {
-    MotorControl( RIGHT_MOTOR, 250 ); //250 P_CW_SPEED_TURN 509
-    MotorControl( LEFT_MOTOR, 1273 ); //R250 P_CCW_SPEED_TURN 1532
-}
-
-void TestMode(void) {
-    long move_time = 100000;
-    long stop_time = 50000;
-    StopMove();
-    _delay_ms(stop_time);
-
-    StraightMove();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    StraightMoveLeftShift();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    StraightMoveRightShift();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    StraightMoveLeftShift2();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    StraightMoveRightShift2();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    TurnMoveRight();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    TurnMoveLeft();
-    _delay_ms(move_time);
-
-    StopMove();
-    _delay_ms(stop_time);
-
-    BackMove();
-    _delay_ms(move_time);
+	AdjustSpeed(250, 1273);
 }
 
 void PrintErrorCode() {
     if(dxl_get_rxpacket_error(ERRBIT_VOLTAGE) == 1)
-    printf("Input voltage error!\n");
+    LOG_ERROR("Input voltage error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_ANGLE) == 1)
-    printf("Angle limit error!\n");
+    LOG_ERROR("Angle limit error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_OVERHEAT) == 1)
-    printf("Overheat error!\n");
+    LOG_ERROR("Overheat error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_RANGE) == 1)
-    printf("Out of range error!\n");
+    LOG_ERROR("Out of range error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_CHECKSUM) == 1)
-    printf("Checksum error!\n");
+    LOG_ERROR("Checksum error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_OVERLOAD) == 1)
-    printf("Overload error!\n");
+    LOG_ERROR("Overload error!\n");
 
     if(dxl_get_rxpacket_error(ERRBIT_INSTRUCTION) == 1)
-    printf("Instruction code error!\n");
+    LOG_ERROR("Instruction code error!\n");
 }
 
 // Print communication result
 void PrintCommStatus(int CommStatus) {
     switch(CommStatus)  {
         case COMM_TXFAIL:
-            printf("COMM_TXFAIL: Failed transmit instruction packet!\n");
+            LOG_INFO("COMM_TXFAIL: Failed transmit instruction packet!\n");
             break;
 
         case COMM_TXERROR:
-            printf("COMM_TXERROR: Incorrect instruction packet!\n");
+            LOG_INFO("COMM_TXERROR: Incorrect instruction packet!\n");
             break;
 
         case COMM_RXFAIL:
-            printf("COMM_RXFAIL: Failed get status packet from device!\n");
+            LOG_INFO("COMM_RXFAIL: Failed get status packet from device!\n");
             break;
 
         case COMM_RXWAITING:
-            printf("COMM_RXWAITING: Now receiving status packet!\n");
+            LOG_INFO("COMM_RXWAITING: Now receiving status packet!\n");
             break;
 
         case COMM_RXTIMEOUT:
-            printf("COMM_RXTIMEOUT: There is no status packet!\n");
+            LOG_INFO("COMM_RXTIMEOUT: There is no status packet!\n");
             break;
 
         case COMM_RXCORRUPT:
-            printf("COMM_RXCORRUPT: Incorrect status packet!\n");
+            LOG_INFO("COMM_RXCORRUPT: Incorrect status packet!\n");
             break;
 
         default:
-            printf("This is unknown error code!\n");
+            LOG_INFO("This is unknown error code!\n");
             break;
     }
 }
@@ -344,11 +279,8 @@ void AdjustSpeed(int expectedR, int expectedL) {
 
 int GetCurrentSpeed(int id) {
 	int speed = 0;
-//	speed = (dxl_read_byte(id, 0X27) << 8);
-//	speed += dxl_read_byte(id, 0X26);
-//  printf("Current speed is %d\n", speed);
 	
 	speed = dxl_read_word(id, 0x26);
-	printf("Current speed is %d\n", speed);
+	LOG_INFO("Current speed is %d\n", speed);
 	return speed;
 }

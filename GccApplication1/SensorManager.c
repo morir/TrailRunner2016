@@ -6,9 +6,9 @@
  */ 
 
 #include "SensorManager.h"
+#include "DebugLog.h"
 
 #define IR_SIZE ADC_PORT_6 + 1
-#define DBG 0
 
 void timer_init(void);
 
@@ -27,8 +27,6 @@ void initIRSensor(void) {
     ADCSRA |= (1 << ADPS2) | (1 << ADPS1);  // Clock 1/64div.
     ADCSRA |= (1 << ADEN);  // ADC Enable
     
-//  timer_init();
-//  sei();
 }
 
 unsigned int ReadIRSensor(unsigned int ch) {
@@ -70,16 +68,10 @@ ISR(TIMER1_COMPA_vect) {
     unsigned int * IR = NULL;
     
     ReadIRSensors(IRArrays);
-    if (DBG) {
-        printf( "LEFT_OUTSIDE :%d\r\n", IR[LEFT_OUTSIDE]);
-        printf( "LEFT_INSIDE  :%d\r\n", IR[LEFT_INSIDE]);
-        printf( "CENTER       :%d\r\n", IR[CENTER]);
-        printf( "RIGHT_INSIDE :%d\r\n", IR[RIGHT_INSIDE]);
-        printf( "RIGHT_OUTSIDE:%d\r\n", IR[RIGHT_OUTSIDE]);
-        printf( "GOAL_JUDGE   :%d\r\n", IR[GOAL_JUDGE]);
-    }
-}
-
-void getIRSensors(unsigned int * array) {
-    //array = &IRArrays[0];
+    LOG_DEBUG( "LEFT_OUTSIDE :%d\r\n", IR[LEFT_OUTSIDE]);
+    LOG_DEBUG( "LEFT_INSIDE  :%d\r\n", IR[LEFT_INSIDE]);
+    LOG_DEBUG( "CENTER       :%d\r\n", IR[CENTER]);
+    LOG_DEBUG( "RIGHT_INSIDE :%d\r\n", IR[RIGHT_INSIDE]);
+    LOG_DEBUG( "RIGHT_OUTSIDE:%d\r\n", IR[RIGHT_OUTSIDE]);
+    LOG_DEBUG( "GOAL_JUDGE   :%d\r\n", IR[GOAL_JUDGE]);
 }

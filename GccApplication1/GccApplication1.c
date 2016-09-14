@@ -12,44 +12,41 @@
 #include "include/dynamixel.h"
 #include "SensorManager.h"
 #include "MotorManager.h"
+#include "DebugLog.h"
 
 #include "pid.h"
 
 // ------------------ Defined ------------------
 // State
-#define STATE_INIT           2000
-#define STATE_STOP           2001
-#define STATE_START          2002
-#define STATE_MOVE           2003
-#define STATE_FIXED_MOVE     2004
-#define STATE_TEST_MODE      3000
+//メイン関数のステータス
+#define STATE_INIT           2000//ボードの初期化
+#define STATE_STOP           2001//ロボットの停止
+#define STATE_START          2002//ロボット始動
+#define STATE_MOVE           2003//ロボット動作中
 
 // Line Sensor
-#define LINE_STATE_BLACK    0
-#define LINE_STATE_WHITE    1
+#define LINE_STATE_BLACK    0//センサー値でラインが黒判定
+#define LINE_STATE_WHITE    1//センサー値でラインが黒判定
 
 // PID Param
-#define K_P     0.70     // P param 1.00
-#define K_I     0.50    // I param 5.00
-#define K_D     0.50  // D param 0.0003
-//#define pid_base 500   // base speed P_CW_SPEED_NOMAL 500
-//#define pid_base 440   // base speed P_CW_SPEED_NOMAL 500
+#define K_P     0.70     // P param 1.00：PID制御のパラメータ(実動作で合わせこんだので説明できません)
+#define K_I     0.50    // I param 5.00：PID制御のパラメータ(実動作で合わせこんだので説明できません)
+#define K_D     0.50  // D param 0.0003：PID制御のパラメータ(実動作で合わせこんだので説明できません)
+//↓この数値を大きくすると、直進及び少し曲がる時の速度があがる。
 #define pid_base 500   // base speed P_CW_SPEED_NOMAL 500
-#define pid_lim 30     // control value 30
-#define DELTA_T 0.002   // delta T 0.002
+#define pid_lim 30     // control value 30：PID制御のパラメータ(実動作で合わせこんだので説明できません)
+#define DELTA_T 0.002   // delta T 0.002：PID制御のパラメータ(実動作で合わせこんだので説明できません)
+//PID制御の計算結果で、差分が大きすぎるときの上限、下限値。
+//ベース速度に対してこの数値分までの+-を許容します
 #define offSet_val 250 //450;//300
 
-//// Search Maximuim count
-//#define SEARCH_MAX_COUNT 200
-
 // START SW address
-#define SW_START 0x01   // Emergency Stop
+#define SW_START 0x01   // Emergency Stop 未検証ですがトレイルのロボはこの設定不要だと思う
 
 //#define MAX_STOP_COUNT 20
+//ゴールカウントがこの値を超えるとゴールだと判定
+//2015年は全白だったときの回数をカウントしてゴール判定した
 #define MAX_STOP_COUNT 80
-
-// Debug Log ON/OFF
-#define DBG 1
 
 #define _LED_ON_
 
@@ -59,81 +56,13 @@ void initMoveAction(void);
 int decideMoveAction(void);
 int getAction(void);
 
-int isSensor_000000(int*);
-int isSensor_000001(int*);
-int isSensor_000010(int*);
-int isSensor_000011(int*);
-int isSensor_000100(int*);
-int isSensor_000101(int*);
-int isSensor_000110(int*);
-int isSensor_000111(int*);
-int isSensor_001000(int*);
-int isSensor_001001(int*);
-int isSensor_001010(int*);
-int isSensor_001011(int*);
-int isSensor_001100(int*);
-int isSensor_001101(int*);
-int isSensor_001110(int*);
-int isSensor_001111(int*);
-int isSensor_010000(int*);
-int isSensor_010001(int*);
-int isSensor_010010(int*);
-int isSensor_010011(int*);
-int isSensor_010100(int*);
-int isSensor_010101(int*);
-int isSensor_010110(int*);
-int isSensor_010111(int*);
-int isSensor_011000(int*);
-int isSensor_011001(int*);
-int isSensor_011010(int*);
-int isSensor_011011(int*);
-int isSensor_011100(int*);
-int isSensor_011101(int*);
-int isSensor_011110(int*);
-int isSensor_011111(int*);
-int isSensor_100000(int*);
-int isSensor_100001(int*);
-int isSensor_100010(int*);
-int isSensor_100011(int*);
-int isSensor_100100(int*);
-int isSensor_100101(int*);
-int isSensor_100110(int*);
-int isSensor_100111(int*);
-int isSensor_101000(int*);
-int isSensor_101001(int*);
-int isSensor_101010(int*);
-int isSensor_101011(int*);
-int isSensor_101100(int*);
-int isSensor_101101(int*);
-int isSensor_101110(int*);
-int isSensor_101111(int*);
-int isSensor_110000(int*);
-int isSensor_110001(int*);
-int isSensor_110010(int*);
-int isSensor_110011(int*);
-int isSensor_110100(int*);
-int isSensor_110101(int*);
-int isSensor_110110(int*);
-int isSensor_110111(int*);
-int isSensor_111000(int*);
-int isSensor_111001(int*);
-int isSensor_111010(int*);
-int isSensor_111011(int*);
-int isSensor_111100(int*);
-int isSensor_111101(int*);
-int isSensor_111110(int*);
-int isSensor_111111(int*);
-
 void getSensors(void);
 int getState(void);
 void setState(int state);
 
-void updateAction(int pre_state, int change_state);
+void updateAction(int currentAction, int nextAction);
 
 void executeFinalAction(void);
-
-void FixedMotionACtion(void);
-void nextMoveAction(int action);
 
 void initEmergencyStop(void);
 
@@ -141,7 +70,7 @@ void setLED(void);
 void LED_on(int i);
 void LED_off(int i);
 
-int PID_2(int target_val, int sencer_val);
+void PID_ctlr_Update(int target_val, int sencer_val);
 
 // ------------------ Global Variables Definition ------------------
 
@@ -160,9 +89,11 @@ int mBeforeMoveState = MOVE_SELECTION_TYPE_STRAIGHT;
 // IR Sensor 
 unsigned int IR[ADC_PORT_6 + 1] = {0,0,0,0,0,0,0};
 
+// IRの状態(BITパターン)
+int IR_BitPattern = 0;
+
 int mMoveCount = 0;
 
-//int mSearchCount = 0;
 
 // PID Param
 float pGain = 200;   //Proportional Gain
@@ -175,11 +106,17 @@ int32_t ePrev  =0;   //Previous Error
 int diff[2]    = {0,0};
 int ret_val[2] = {0,0};
 float integral = 0.0;
-int target_senser = 0;
 
-//tset commit
+int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を入力することで、直進時のブレを抑制する制御を行う。
+
 // ------------------ Method ------------------
 
+/**
+* エントリーポイント
+* @brief エントリーポイント
+* @return 0：メイン処理の継続
+* @return 1：メイン処理の終了
+*/
 int main(void) {
     
     initEmergencyStop();
@@ -196,21 +133,17 @@ int main(void) {
         if( checkSerialRead() > 0 ) {
             readData = getReadBuffer();
             if( readData != NULL ){
-                printf( "readData=%s\n", &readData[0] );
+                LOG_INFO( "readData=%s\n", &readData[0] );
                 split( &readData[0] );
                 switch( serCmd[0] ) {
                 case 1:
-                    //MotorControl( 2, serCmd[1] );
-                    //setParamMoveAction(serCmd[1], serCmd[2]);
                     break;
                 case 999:
-                    printf( "finish\n");
+                    LOG_INFO("finish\n");
                     isFinish = 1;
                     break;
                 }
                 if( isFinish > 0 ) {
-                    //MotorControl( 0, 0 );
-                    //setMoveAction(MOVE_SELECTION_TYPE_STOP);
                     break;
                 }
                 memset( readData, 0x00, SERIAL_BUFFER_SIZE );
@@ -225,6 +158,7 @@ int main(void) {
                 state = STATE_STOP;
             }
             
+			//ゴール判定用のカウント for 2015
 			if(mCount >= MAX_STOP_COUNT) {
 				executeFinalAction();
 				break;
@@ -250,27 +184,21 @@ int main(void) {
             case STATE_MOVE:
                 setState(decideMoveAction());
                 break;
-                
-            case STATE_FIXED_MOVE:
-                FixedMotionACtion();
-                break;
-                
-            case STATE_TEST_MODE:
-                Execute(MOVE_SELECTION_TYPE_S_MOVE_10);
-                break;
             
             default:
                 setState(STATE_INIT);
                 break;
             }
-            //_delay_ms(DELAY_MSEC);
-//            _delay_us(50);
-//            _delay_us(100);
-//            _delay_ms(500);//DBG
         }
     }
 }
 
+/**
+* 文字列を分割
+* @brief 文字列を分割
+* @param (char * s1) 分割する文字列
+* @return なし
+*/
 void split( char * s1 ) {
     char s2[] = " ,";
     char *tok;
@@ -278,34 +206,44 @@ void split( char * s1 ) {
 
     tok = strtok( s1, s2 );
     while( tok != NULL ){
-//      printf( "%s?n", tok );
         serCmd[cnt++] = atoi(tok);
         tok = strtok( NULL, s2 );  /* 2回目以降 */
     }
 }
 
-//最初の動作
+/**
+* 電源ON後の初期アクション
+* @brief 電源ON後の初期アクション
+* @return なし
+* @detail 電源ON後の初期アクションを設定する。
+*/
 void initMoveAction(void) {
-//    Execute(MOVE_SELECTION_TYPE_LEFTTURN);//左回転
-//    _delay_ms(1000);    // 1s
+    //Execute(MOVE_SELECTION_TYPE_LEFTTURN);//左回転・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
+    //_delay_ms(1000);    // 1s・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
     Execute(MOVE_SELECTION_TYPE_STOP);//次の動作：停止
 }
 
+/**
+* センサー値から次の行動パターンを決定
+* @brief センサー値から次の行動パターンを決定
+* @return メインプログラムのステータス
+* @detail センサー値から次の行動パターンを決定し、戻り値にメインプログラムのステータスを返す。
+*/
 int decideMoveAction(void) {
-    int ret_state = STATE_MOVE;
+    int ret_state = STATE_MOVE;//メインプログラムのステータス
 	
-    getSensors();
-    int currentAction = mCurrentAction;
+    getSensors();//現在のセンサー値を取得。
+    int currentAction = mCurrentAction;//前回の判定を次の動作判定に使用する
 	
     int nextAction;
-//    int search_count = 0;
 
-//	pre_move = MOVE_SELECTION_TYPE_STOP;//DBG
+	//前回の判定に応じて分岐する
     switch (currentAction) {
     case MOVE_SELECTION_TYPE_START:
     case MOVE_SELECTION_TYPE_STOP:
         Execute(currentAction);
-        if (currentAction == MOVE_SELECTION_TYPE_START) {
+        if (currentAction == MOVE_SELECTION_TYPE_START) {//このif文無くして、中の処理をcase MOVE_SELECTION_TYPE_STARTにすれば良いのでは？
+        	//次は、直進
             nextAction = MOVE_SELECTION_TYPE_STRAIGHT;
         } else {
             nextAction = MOVE_SELECTION_TYPE_START;
@@ -313,89 +251,93 @@ int decideMoveAction(void) {
             diff[1] = 0;
             integral = 0;
         }
+    	//次の動作判定を、更新(変更)する。
         updateAction(currentAction, nextAction);
         break;
 
+	//中央４個のセンサーのどれか１つ以上黒ならここを使ってPID制御を行う
     case MOVE_SELECTION_TYPE_STRAIGHT:
     case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
     case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
     case MOVE_SELECTION_TYPE_LEFTSIFT_1:
     case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-        PID_2(0, target_senser);
-        setParamMoveAction(ret_val[0], ret_val[1]);
+        PID_ctlr_Update(0, PID_ctlr);//PID制御の制御値を更新
+        setParamMoveAction(ret_val[0], ret_val[1]);//モーターの駆動指令
 
-        getSensors();
-        nextAction = getAction();
+        nextAction = getAction();//現在のセンサー値を使って、次の動作を決定
 
+    	//次の動作判定を、更新(変更)する。
         updateAction(currentAction, nextAction);
         break;
 
+    //ラインを見失ったとき、直前の動作が直進ならここに入るはず。
+    //現状、ここに入る事は無いと思う。削除候補。
     case MOVE_SELECTION_TYPE_BACK:
-        //LED_on(1);
-        //LED_on(2);
-        //LED_on(3);
-        //LED_on(4);
-        //LED_on(5);
-        //LED_on(6);
         Execute(currentAction);
-        getSensors();
         nextAction = getAction();
         
         updateAction(currentAction, nextAction);
         break;
         
+    //右旋回用の分岐
+    //一度、ここに入ると中央のセンサーが黒になるまでループし続ける。
     case MOVE_SELECTION_TYPE_RIGHTTURN:
     case MOVE_SELECTION_TYPE_RIGHTTURN_3:
-        LED_on(1);
-//        Execute(currentAction);
-        Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
+        LED_on(1);//LED点灯
+        Execute(MOVE_SELECTION_TYPE_RIGHTTURN);//右の定常旋回実行
 		if (currentAction == MOVE_SELECTION_TYPE_RIGHTTURN) {
-			_delay_ms(150);
+			//右旋回が判定されたら、一定時間旋回を継続させる
+			//前回の判定も考慮して、ウェイト時間を変更すべきかな・・・・
+			_delay_ms(150);//150msのウェイト
 		}
-//        search_count = 0;
+    	//ループ
         while(1) {
-            getSensors();
-            nextAction = getAction();
+            nextAction = getAction();//現在のセンサー値で、次の動作を決める
 			if (nextAction == MOVE_SELECTION_TYPE_STRAIGHT ||
                 nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_1 ||
                 nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_2 ||
                 nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_1 ||
                 nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_2)
 			{
+				//中央４つのセンサーのいずれかが黒なら、以降の処理
 				diff[0] = 0;
                 diff[1] = 0;
                 integral = 0;
-				Execute(MOVE_SELECTION_TYPE_LEFTTURN);
+				Execute(MOVE_SELECTION_TYPE_LEFTTURN);//逆回転を実行して、旋回動作のブレーキ。
 				if (currentAction == MOVE_SELECTION_TYPE_RIGHTTURN) {
+					//旋回中から、ここに入ったらブレーキ時間を長い時間にする
+					//直角旋回からの復帰時は、ここに入るはず。
 					_delay_ms(100);
 				} else {
+					//旋回以外から、ここに入ったらブレーキ時間を短い時間にする
+					//斜めのラインの旋回からの復帰時は、ここに入るはず。
 					_delay_ms(50);
 				}
-				Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-				updateAction(currentAction, nextAction);
+				Execute(MOVE_SELECTION_TYPE_STRAIGHT);//直進実行
+				updateAction(currentAction, nextAction);//PID制御を使った直進に遷移。
 				break;
 			}
 			else
 			{
+			//旋回中に、中央のセンサーが白ならここ。
 				LED_on(1);
-				Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
-				_delay_ms(10);
+				Execute(MOVE_SELECTION_TYPE_RIGHTTURN);//右旋回を再実行
+				_delay_ms(10);//10ms旋回を継続
 			}
         }
-//        LED_on(1);
         break;
         
+    //左旋回用の分岐
+    //一度、ここに入ると中央のセンサーが黒になるまでループし続ける。
+    //右旋回の処理と同じ考えで、回転方向が左旋回。
     case MOVE_SELECTION_TYPE_LEFTTURN:
     case MOVE_SELECTION_TYPE_LEFTTURN_3:
         LED_on(5);
-//        Execute(currentAction);
         Execute(MOVE_SELECTION_TYPE_LEFTTURN);
 		if (currentAction == MOVE_SELECTION_TYPE_LEFTTURN) {
 			_delay_ms(150);
 		}
-//        search_count = 0;
         while(1) {
-            getSensors();
             nextAction = getAction();
 			if (nextAction == MOVE_SELECTION_TYPE_STRAIGHT ||
                 nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_1 ||
@@ -424,15 +366,15 @@ int decideMoveAction(void) {
 			}
 
         }
-//        LED_on(2);
         break;
 
+    //両端が黒(中央が白)なら、ここに入るようにしている。
+    //実動作で、2015年ルールでも、ここに入ることは無いはず。
+    //今回、全黒は別の判定に変わるはずなので、ここに入る事は無い見込み。削除候補。
     case MOVE_SELECTION_TYPE_SEARCH:
-        printf("Search move\r\n");
+        LOG_INFO("Search move\r\n");
         LED_on(3);
         LED_on(6);
-		//Execute(currentAction);
-		getSensors();
         nextAction = getAction();
         if (nextAction != MOVE_SELECTION_TYPE_SEARCH ) {
             // next state
@@ -472,46 +414,49 @@ int decideMoveAction(void) {
         updateAction(currentAction, nextAction);
         break;
 
+    //全白ならここ。
+    //2015年のゴール判定用。
 	case MOVE_SELECTION_TYPE_STRAIGHT_2:
-//		LED_on(1);
-//		LED_on(4);
-		//LED_on(3);
-		//LED_on(6);
+    	//LEDをすべて点灯
         LED_on(1);
         LED_on(2);
         LED_on(3);
         LED_on(4);
         LED_on(5);
         LED_on(6);
-		Execute(currentAction);
-		getSensors();
-		nextAction = getAction();
-		updateAction(currentAction, nextAction);
+		Execute(currentAction);//前回の判定で、モーターを駆動
+		nextAction = getAction();//現在のセンサー値で、次の動作を判断
+		updateAction(currentAction, nextAction);//次の動作を決定
 		break;
 
+    //両端が黒(中央が白)なら、ここに入るようにしている。
+    //実動作で、2015年ルールでも、ここに入ることは無いはず。
+    //今回、全黒は別の判定に変わるはずなので、ここに入る事は無い見込み。削除候補。
     case MOVE_SELECTION_TYPE_S_MOVE_1:
         // 1 1 0 0 1 1
         // 1 0 0 0 1 1
         // 1 1 0 0 0 1
         // 1 0 0 0 0 1
-        printf("Special Move 1\r\n");
+        LOG_INFO("Special Move 1\r\n");
         nextAction = getAction();
         updateAction(currentAction, nextAction);
         break;
+    //現時点で未使用。削除候補。
     case MOVE_SELECTION_TYPE_S_MOVE_2:
         // 0 0 0 0 0 1
-//        LED_on(4);
-        printf("Special Move 2\r\n");
+        LOG_INFO("Special Move 2\r\n");
         nextAction = getAction();
         updateAction(currentAction, nextAction);
         break;
+    //現時点で未使用。削除候補。
     case MOVE_SELECTION_TYPE_S_MOVE_3:
         // 1 0 0 0 0 0
-//        LED_on(5);
-        printf("Special Move 3\r\n");
+        LOG_INFO("Special Move 3\r\n");
         nextAction = getAction();
         updateAction(currentAction, nextAction);
         break;
+    //判定に使っているが、実動作で存在しないパターンと思われる。
+    //削除候補。
     case MOVE_SELECTION_TYPE_S_MOVE_4:
         // 0 1 1 1 1 0
         // 0 0 1 1 1 0
@@ -521,8 +466,7 @@ int decideMoveAction(void) {
         // 0 1 0 0 1 0
         // 0 1 1 1 0 0
         // 0 1 0 1 0 0
-//        LED_on(6);
-        printf( "Special Move 4\r\n" );
+        LOG_INFO( "Special Move 4\r\n" );
         nextAction = getAction();
         updateAction(currentAction, nextAction);
         break;
@@ -535,1148 +479,398 @@ int decideMoveAction(void) {
     return ret_state;
 }
 
+/**
+ * センサー値を取得
+ * @brief センサー値を取得
+ * @return なし
+ * @detail センサー値を取得し、IR[]およびIR_BitPatternを更新する。
+ */
 void getSensors(void) {
+	/* センサー値を取得 */
     ReadIRSensors(IR);
+	
+	/* IR状態をBITパターンに変換 */
+	IR_BitPattern = 0;
+	if ( IR[GOAL_JUDGE]		>= COMPARE_VALUE )	IR_BitPattern |= BIT_GOAL_JUDGE_ON;
+	if ( IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_OUTSIDE_ON;
+	if ( IR[RIGHT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_INSIDE_ON;
+	if ( IR[CENTER]			>= COMPARE_VALUE )	IR_BitPattern |= BIT_CENTER_ON;
+	if ( IR[LEFT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_LEFT_INSIDE_ON;
+	if ( IR[LEFT_OUTSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_LEFT_OUTSIDE_ON;
 
-    printf("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
+    LOG_INFO("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
 	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
+	LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
+				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
+				((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
+	
 }
 
+/**
+* メイン関数分岐用のステータスを取得
+* @brief メイン関数分岐用のステータスを取得
+* @return メイン関数分岐用のステータス
+*/
 int getState(void) {
     return mState;
 }
 
+/**
+ * メイン関数分岐用のステータスを設定
+ * @brief メイン関数分岐用のステータスを取得
+ * @param (int state) メイン関数分岐用のステータス
+ * @return なし
+ */
 void setState(int state) {
     mState = state;
 }
 
-void updateAction(int pre_state, int change_state) {
-    mBeforeMoveState = pre_state;
-    if (pre_state != change_state) {
-        mCurrentAction = change_state;
+/**
+ * アクションを更新
+ * @brief アクションを更新
+ * @param (int currentAction) 現在のアクション
+ * @param (int nextAction)    次のアクション
+ * @return なし
+ * @detail 現在実行中のアクション、次のアクションを比較し、差分がある場合のみ実行する。
+ */
+void updateAction(int currentAction, int nextAction) {
+	// Next Move Stateを更新
+    mBeforeMoveState = currentAction;
+	
+	// 
+    if (currentAction != nextAction) {
+        mCurrentAction = nextAction;
     }
 }
 
+/**
+* センサー値を参照しアクションを取得する。
+* @brief センサー値を参照しアクションを取得する。
+* @return 戻り値の説明
+*/
 int getAction(void) {
     int ret = 0;
     
-    int i_state[ADC_PORT_6 + 1];
-    
-    int dbgFlag = 1;//DBG
-    for (int i = ADC_PORT_1; i <= ADC_PORT_6; i++) {
-        if ( IR[i] >= COMPARE_VALUE ) {
-            i_state[i] = LINE_STATE_BLACK;
-        } else {
-            i_state[i] = LINE_STATE_WHITE;
-        }
-    }
+	// センサー値を取得
+	getSensors();
 
+	// LEDを設定
 	setLED();
-    // Right 3
-    // Center Right_2 6
-    // Center Right_1 2
-    // Center Left_1  5
-    // Center Left_2  1
-    // Left  4
 
-	if (isSensor_111111(i_state) == TRUE) {
-		// 1 1 1 1 1 1
+	switch(IR_BitPattern) { 
+	case BIT_111111:
         LED_on(2);
         LED_on(5);
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 1 1 1 1 \r\n");
-	}
-	else if (isSensor_101111(i_state) == TRUE) {
-		// 1 0 1 1 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		LOG_DEBUG("BIT_111111\r\n");		
+		break;
+	case BIT_101111:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 1 1 1 1 \r\n");
-	}
-	else if (isSensor_110111(i_state) == TRUE) {
-		// 1 1 0 1 1 1
+		LOG_DEBUG("BIT_101111\r\n");
+		break;
+	case BIT_110111:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 0 1 1 1 \r\n");
-	}
-	else if (isSensor_100111(i_state) == TRUE) {
-		// 1 0 0 1 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		LOG_DEBUG("BIT_110111\r\n");
+		break;
+	case BIT_100111:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 0 1 1 1 \r\n");
-	}
-	else if (isSensor_111011(i_state) == TRUE) {
-		// 1 1 1 0 1 1
+		LOG_DEBUG("BIT_100111\r\n");
+		break;
+	case BIT_111011:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 1 0 1 1 \r\n");
-	}
-	else if (isSensor_101011(i_state) == TRUE) {
-		// 1 0 1 0 1 1
+		LOG_DEBUG("BIT_111011\r\n");
+		break;
+	case BIT_101011:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 1 0 1 1 \r\n");
-	}
-	else if (isSensor_110011(i_state) == TRUE) {
-		// 1 1 0 0 1 1
+		LOG_DEBUG("BIT_101011\r\n");
+		break;
+	case BIT_110011:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		if (dbgFlag) printf("1 1 0 0 1 1 \r\n");
-	}
-	else if (isSensor_100011(i_state) == TRUE) {
-		// 1 0 0 0 1 1
+		LOG_DEBUG("BIT_110011\r\n");
+		break;
+	case BIT_100011:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		if (dbgFlag) printf("1 0 0 0 1 1 \r\n");
-	}
-	else if (isSensor_111101(i_state) == TRUE) {
-		// 1 1 1 1 0 1
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("BIT_100011\r\n");
+		break;
+	case BIT_111101:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 1 1 0 1 \r\n");
-	}
-	else if (isSensor_101101(i_state) == TRUE) {
-		// 1 0 1 1 0 1
+		LOG_DEBUG("BIT_111101\r\n");
+		break;
+	case BIT_101101:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 1 1 0 1 \r\n");
-	}
-	else if (isSensor_110101(i_state) == TRUE) {
-		// 1 1 0 1 0 1
+		LOG_DEBUG("BIT_101101\r\n");
+		break;
+	case BIT_110101:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 0 1 0 1 \r\n");
-	}
-	else if (isSensor_100101(i_state) == TRUE) {
-		// 1 0 0 1 0 1
+		LOG_DEBUG("BIT_110101\r\n");
+		break;
+	case BIT_100101:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 0 1 0 1 \r\n");
-	}
-	else if (isSensor_111001(i_state) == TRUE) {
-		// 1 1 1 0 0 1
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("BIT_100101\r\n");
+		break;
+	case BIT_111001:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 1 1 0 0 1 \r\n");
-	}
-	else if (isSensor_101001(i_state) == TRUE) {
-		// 1 0 1 0 0 1
+		LOG_DEBUG("BIT_111001\r\n");
+		break;
+	case BIT_101001:
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		if (dbgFlag) printf("1 0 1 0 0 1 \r\n");
-	}
-	else if (isSensor_110001(i_state) == TRUE) {
-		// 1 1 0 0 0 1
+		LOG_DEBUG("BIT_101001\r\n");
+		break;
+	case BIT_110001:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		if (dbgFlag) printf("1 1 0 0 0 1 \r\n");
-	}
-	else if (isSensor_100001(i_state) == TRUE) {
-		// 1 0 0 0 0 1
+		LOG_DEBUG("BIT_110001\r\n");
+		break;
+	case BIT_100001:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		if (dbgFlag) printf("1 0 0 0 0 1 \r\n");
-	}
-	else if (isSensor_011111(i_state) == TRUE) {
-		// 0 1 1 1 1 1
+		LOG_DEBUG("BIT_100001\r\n");
+		break;
+	case BIT_011111:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		if (dbgFlag) printf("0 1 1 1 1 1 \r\n");
-	}
-	else if (isSensor_001111(i_state) == TRUE) {
-		// 0 0 1 1 1 1
+		LOG_DEBUG("BIT_011111\r\n");
+		break;
+	case BIT_001111:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		if (dbgFlag) printf("0 0 1 1 1 1 \r\n");
-	}
-	else if (isSensor_010111(i_state) == TRUE) {
-		// 0 1 0 1 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		LOG_DEBUG("BIT_001111\r\n");
+		break;
+	case BIT_010111:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 0 1 1 1 \r\n");
-	}
-	else if (isSensor_000111(i_state) == TRUE) {
-		// 0 0 0 1 1 1
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_010111\r\n");
+		break;
+	case BIT_000111:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		if (dbgFlag) printf("0 0 0 1 1 1 \r\n");
-	}
-	else if (isSensor_011011(i_state) == TRUE) {
-		// 0 1 1 0 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		LOG_DEBUG("BIT_000111\r\n");
+		break;
+	case BIT_011011:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 1 0 1 1 \r\n");
-	}
-	else if (isSensor_001011(i_state) == TRUE) {
-		// 0 0 1 0 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("xBIT_011011xxx\r\n");
+		break;
+	case BIT_001011:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 1 0 1 1 \r\n");
-	}
-	else if (isSensor_010011(i_state) == TRUE) {
-		// 0 1 0 0 1 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_001011\r\n");
+		break;
+	case BIT_010011:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 0 0 1 1 \r\n");
-	}
-	else if (isSensor_000011(i_state) == TRUE) {
-		// 0 0 0 0 1 1
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_010011\r\n");
+		break;
+	case BIT_000011:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
-//		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 0 0 1 1 \r\n");
-	}
-	else if (isSensor_011101(i_state) == TRUE) {
-		// 0 1 1 1 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_000011\r\n");
+		break;
+	case BIT_011101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 1 1 0 1 \r\n");
-	}
-	else if (isSensor_001101(i_state) == TRUE) {
-		// 0 0 1 1 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_011101\r\n");
+		break;
+	case BIT_001101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 1 1 0 1 \r\n");
-	}
-	else if (isSensor_010101(i_state) == TRUE) {
-		// 0 1 0 1 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_001101\r\n");
+		break;
+	case BIT_010101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 0 1 0 1 \r\n");
-	}
-	else if (isSensor_000101(i_state) == TRUE) {
-		// 0 0 0 1 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_010101\r\n");
+		break;
+	case BIT_000101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 0 1 0 1 \r\n");
-	}
-	else if (isSensor_011001(i_state) == TRUE) {
-		// 0 1 1 0 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_000101\r\n");
+		break;
+	case BIT_011001:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 1 0 0 1 \r\n");
-	}
-	else if (isSensor_001001(i_state) == TRUE) {
-		// 0 0 1 0 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_011001\r\n");
+		break;
+	case BIT_001001:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 1 0 0 1 \r\n");
-	}
-	else if (isSensor_010001(i_state) == TRUE) {
-		// 0 1 0 0 0 1
-//		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_001001\r\n");
+		break;
+	case BIT_010001:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 1 0 0 0 1 \r\n");
-	}
-	else if (isSensor_000001(i_state) == TRUE) {
-		// 0 0 0 0 0 1
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_010001\r\n");
+		break;
+	case BIT_000001:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
-//		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 9;
-		if (dbgFlag) printf("0 0 0 0 0 1 \r\n");
-	}
-	else if (isSensor_111110(i_state) == TRUE) {
-		// 1 1 1 1 1 0
+		PID_ctlr = 9;
+		LOG_DEBUG("BIT_000001\r\n");
+		break;
+	case BIT_111110:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		if (dbgFlag) printf("1 1 1 1 1 0 \r\n");
-	}
-	else if (isSensor_101110(i_state) == TRUE) {
-		// 1 0 1 1 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("BIT_111110\r\n");
+		break;
+	case BIT_101110:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 1 1 1 0 \r\n");
-	}
-	else if (isSensor_110110(i_state) == TRUE) {
-		// 1 1 0 1 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_101110\r\n");
+		break;
+	case BIT_110110:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 1 0 1 1 0 \r\n");
-	}
-	else if (isSensor_100110(i_state) == TRUE) {
-		// 1 0 0 1 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_110110\r\n");
+		break;
+	case BIT_100110:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 0 1 1 0 \r\n");
-	}
-	else if (isSensor_111010(i_state) == TRUE) {
-		// 1 1 1 0 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_100110\r\n");
+		break;
+	case BIT_111010:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 1 1 0 1 0 \r\n");
-	}
-	else if (isSensor_101010(i_state) == TRUE) {
-		// 1 0 1 0 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_111010\r\n");
+		break;
+	case BIT_101010:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 1 0 1 0 \r\n");
-	}
-	else if (isSensor_110010(i_state) == TRUE) {
-		// 1 1 0 0 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_101010\r\n");
+		break;
+	case BIT_110010:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 1 0 0 1 0 \r\n");
-	}
-	else if (isSensor_100010(i_state) == TRUE) {
-		// 1 0 0 0 1 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_110010\r\n");
+		break;
+	case BIT_100010:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 0 0 1 0 \r\n");
-	}
-	else if (isSensor_111100(i_state) == TRUE) {
-		// 1 1 1 1 0 0
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_100010\r\n");
+		break;
+	case BIT_111100:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		if (dbgFlag) printf("1 1 1 1 0 0 \r\n");
-	}
-	else if (isSensor_101100(i_state) == TRUE) {
-		// 1 0 1 1 0 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("BIT_111100\r\n");
+		break;
+	case BIT_101100:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 1 1 0 0 \r\n");
-	}
-	else if (isSensor_110100(i_state) == TRUE) {
-		// 1 1 0 1 0 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_101100\r\n");
+		break;
+	case BIT_110100:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 1 0 1 0 0 \r\n");
-	}
-	else if (isSensor_100100(i_state) == TRUE) {
-		// 1 0 0 1 0 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_110100\r\n");
+		break;
+	case BIT_100100:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 0 1 0 0 \r\n");
-	}
-	else if (isSensor_111000(i_state) == TRUE) {
-		// 1 1 1 0 0 0
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_100100\r\n");
+		break;
+	case BIT_111000:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		if (dbgFlag) printf("1 1 1 0 0 0 \r\n");
-	}
-	else if (isSensor_101000(i_state) == TRUE) {
-		// 1 0 1 0 0 0
-//		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("BIT_111000\r\n");
+		break;
+	case BIT_101000:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 1 0 0 0 \r\n");
-	}
-	else if (isSensor_110000(i_state) == TRUE) {
-		// 1 1 0 0 0 0
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_101000\r\n");
+		break;
+	case BIT_110000:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
-//		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 1 0 0 0 0 \r\n");
-	}
-	else if (isSensor_100000(i_state) == TRUE) {
-		// 1 0 0 0 0 0
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_110000\r\n");
+		break;
+	case BIT_100000:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
-//		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -9;
-		if (dbgFlag) printf("1 0 0 0 0 0 \r\n");
-	}
-	else if (isSensor_011110(i_state) == TRUE) {
-		// 0 1 1 1 1 0
+		PID_ctlr = -9;
+		LOG_DEBUG("BIT_100000\r\n");
+		break;
+	case BIT_011110:
 		ret = MOVE_SELECTION_TYPE_STRAIGHT;
-		if (dbgFlag) printf("0 1 1 1 1 0 \r\n");
-	}
-	else if (isSensor_001110(i_state) == TRUE) {
-		// 0 0 1 1 1 0
+		LOG_DEBUG("BIT_011110\r\n");
+		break;
+	case BIT_001110:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 0 1 1 1 0 \r\n");
-	}
-	else if (isSensor_010110(i_state) == TRUE) {
-		// 0 1 0 1 1 0
+		LOG_DEBUG("BIT_001110\r\n");
+		break;
+	case BIT_010110:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 1 0 1 1 0 \r\n");
-	}
-	else if (isSensor_000110(i_state) == TRUE) {
-		// 0 0 0 1 1 0
+		LOG_DEBUG("BIT_010110\r\n");
+		break;
+	case BIT_000110:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		target_senser = 3;//2
-		if (dbgFlag) printf("0 0 0 1 1 0 \r\n");
-	}
-	else if (isSensor_011010(i_state) == TRUE) {
-		// 0 1 1 0 1 0
+		PID_ctlr = 3;//2
+		LOG_DEBUG("BIT_000110\r\n");
+		break;
+	case BIT_011010:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 1 1 0 1 0 \r\n");
-	}
-	else if (isSensor_001010(i_state) == TRUE) {
-		// 0 0 1 0 1 0
+		LOG_DEBUG("BIT_011010\r\n");
+		break;
+	case BIT_001010:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 0 1 0 1 0 \r\n");
-	}
-	else if (isSensor_010010(i_state) == TRUE) {
-		// 0 1 0 0 1 0
+		LOG_DEBUG("BIT_001010\r\n");
+		break;
+	case BIT_010010:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 1 0 0 1 0 \r\n");
-	}
-	else if (isSensor_000010(i_state) == TRUE) {
-		// 0 0 0 0 1 0
+		LOG_DEBUG("BIT_010010\r\n");
+		break;
+	case BIT_000010:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		target_senser = 5;//3
-		if (dbgFlag) printf("0 0 0 0 1 0 \r\n");
-	}
-	else if (isSensor_011100(i_state) == TRUE) {
-		// 0 1 1 1 0 0
+		PID_ctlr = 5;//3
+		LOG_DEBUG("BIT_000010\r\n");
+		break;
+	case BIT_011100:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 1 1 1 0 0 \r\n");
-	}
-	else if (isSensor_001100(i_state) == TRUE) {
-		// 0 0 1 1 0 0
+		LOG_DEBUG("BIT_011100\r\n");
+		break;
+	case BIT_001100:
 		ret = MOVE_SELECTION_TYPE_STRAIGHT;
-		if (dbgFlag) printf("0 0 1 1 0 0 \r\n");
-	}
-	else if (isSensor_010100(i_state) == TRUE) {
-		// 0 1 0 1 0 0
+		LOG_DEBUG("BIT_001100\r\n");
+		break;
+	case BIT_010100:
 		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		if (dbgFlag) printf("0 1 0 1 0 0 \r\n");
-	}
-	else if (isSensor_000100(i_state) == TRUE) {
-		// 0 0 0 1 0 0
+		LOG_DEBUG("BIT_010100\r\n");
+		break;
+	case BIT_000100:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		target_senser = 1;
-		if (dbgFlag) printf("0 0 0 1 0 0 \r\n");
-	}
-	else if (isSensor_011000(i_state) == TRUE) {
-		// 0 1 1 0 0 0
+		PID_ctlr = 1;
+		LOG_DEBUG("BIT_000100\r\n");
+		break;
+	case BIT_011000:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		target_senser = -3;//-2
-		if (dbgFlag) printf("0 1 1 0 0 0 \r\n");
-	}
-	else if (isSensor_001000(i_state) == TRUE) {
-		// 0 0 1 0 0 0
+		PID_ctlr = -3;//-2
+		LOG_DEBUG("BIT_011000\r\n");
+		break;
+	case BIT_001000:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		target_senser = -1;
-		if (dbgFlag) printf("0 0 1 0 0 0 \r\n");
-	}
-	else if (isSensor_010000(i_state) == TRUE) {
-		// 0 1 0 0 0 0
+		PID_ctlr = -1;
+		LOG_DEBUG("BIT_001000\r\n");
+		break;
+	case BIT_010000:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		target_senser = -5;//-3
-		if (dbgFlag) printf("0 1 0 0 0 0 \r\n");
-	}
-	else if (isSensor_000000(i_state) == TRUE) {
-		// 0 0 0 0 0 0
-//        LED_on(1);
-//        LED_on(4);
+		PID_ctlr = -5;//-3
+		LOG_DEBUG("BIT_010000\r\n");
+		break;
+	case BIT_000000:
 		ret = MOVE_SELECTION_TYPE_STRAIGHT_2;
-		if(dbgFlag) printf("0 0 0 0 0 0 \r\n");
+		LOG_DEBUG("BIT_000000\r\n");
+		break;
+	default:
+		LOG_DEBUG("default\r\n");
+		break;
 	}
+	
+	LOG_DEBUG("getAction() ret=%5d PID_ctlr=%5d\r\n",ret ,PID_ctlr );
+	
     return ret;
 }
 
-int isSensor_000000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_000001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_000010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_000011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_000100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_000101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_000110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_000111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_001000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_001001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_001010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_001011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_001100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_001101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_001110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_001111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_010000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_010001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_010010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_010011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_010100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_010101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_010110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_010111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_011000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_011001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_011010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_011011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_011100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_011101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_011110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_011111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_100000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_100001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_100010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_100011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_100100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_100101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_100110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_100111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_101000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_101001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_101010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_101011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_101100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_101101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_101110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_101111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_110000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_110001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_110010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_110011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_110100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_110101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_110110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_110111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_111000(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_111001(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_111010(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_111011(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_WHITE) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_111100(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_111101(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_WHITE) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
-int isSensor_111110(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_WHITE);
-}
-
-int isSensor_111111(int *sensor)
-{
-	return
-		(sensor[LEFT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[LEFT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[CENTER] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_INSIDE] == LINE_STATE_BLACK) &&
-		(sensor[RIGHT_OUTSIDE] == LINE_STATE_BLACK) &&
-		(sensor[GOAL_JUDGE] == LINE_STATE_BLACK);
-}
-
+/**
+* ゴール到達時の処理
+* @brief ゴール到達時の処理
+* @return なし
+*/
 void executeFinalAction(void)
 {
-	printf("executeFinalAction!!\r\n");
+	LOG_INFO("executeFinalAction!!\r\n");
 
-	//_delay_ms(50);
 	MotorControl( RIGHT_MOTOR, 300 );
 	MotorControl( LEFT_MOTOR, 300 );
 	_delay_ms(900);
@@ -1692,186 +886,14 @@ void executeFinalAction(void)
 	Execute(MOVE_SELECTION_TYPE_STOP);
 }
 
-void FixedMotionACtion(void) {
-    int next_state;
-    int timer = 0;
-    
-    const int count = mMoveCount;
-    if (count > MAX_COUNT) {
-        return;
-    }
-    
-    switch (count) {
-        case 0:
-        case 6:
-        case 8:
-        case 12:
-        case 14:
-            // Straight to Left Turn
-            if (DBG) printf("Straight Move %d\r\n", count);
-            //StraightMove();
-            Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-            nextMoveAction(MOVE_SELECTION_TYPE_LEFTTURN);
-            break;
-        
-        case 1:
-        case 7:
-        case 9:
-        case 13:
-        case 15:
-            // Left Turn to Straight
-            if (DBG) printf("Left Turn %d\r\n", count);
-            //TurnMoveLeft();
-            Execute(MOVE_SELECTION_TYPE_LEFTTURN);
-            nextMoveAction(MOVE_SELECTION_TYPE_STRAIGHT);
-            break;
-        
-        case 2:
-        case 4:
-        case 10:
-        case 18:
-            // Straight to Right Turn
-            if (DBG) printf("Straight Move %d\r\n", count);
-            //StraightMove();
-            Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-            nextMoveAction(MOVE_SELECTION_TYPE_RIGHTTURN);
-            break;
-        
-        case 3:
-        case 5:
-        case 11:
-        case 17:
-        case 19:
-            // Right Turn to Straight
-            if (DBG) printf("Right Turn %d\r\n", count);
-            //TurnMoveRight();
-            Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
-            nextMoveAction(MOVE_SELECTION_TYPE_STRAIGHT);
-            break;
-        
-        case 16:
-            // Long Straight to Right Turn
-            if (DBG) printf("Straight Move %d\r\n", count);
-            //StraightMove();
-            Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-            while(1) {
-                _delay_ms(10);
-                getSensors();
-                next_state = getAction();
-                if ( next_state ==  MOVE_SELECTION_TYPE_RIGHTTURN ) {
-                    mMoveCount++;
-                    break;
-                }
-                timer++;
-                if (timer > 50000) {
-                    // 100s next
-                    mMoveCount++;
-                    break;
-                }
-            }
-            break;
-        
-        case 20:
-        case 22:
-        case 24:
-        case 26:
-            // Straight to Bifurcate
-            if (DBG) printf("Straight Move %d\r\n", count);
-            //StraightMove();
-            Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-            while(1) {
-                _delay_ms(10);
-                getSensors();
-                next_state = getAction();
-                if ( next_state ==  MOVE_SELECTION_TYPE_RIGHTTURN ||
-                     next_state ==  MOVE_SELECTION_TYPE_LEFTTURN ) {
-                    mMoveCount++;
-                    break;
-                }
-                timer++;
-                if (timer > 5000) {
-                    // 10s next
-                    mMoveCount++;
-                    break;
-                }
-            }
-            break;
-        
-        case 21:
-        case 23:
-        case 25:
-        case 27:
-            // Bifurcate to Straight
-            next_state = getAction();
-            if ( next_state ==  MOVE_SELECTION_TYPE_RIGHTTURN ) {
-                if (DBG) printf("Right Turn %d\r\n", count);
-                //TurnMoveRight();
-                Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
-            } else if ( next_state ==  MOVE_SELECTION_TYPE_LEFTTURN ) {
-                if (DBG) printf("Left Turn %d\r\n", count);
-                //TurnMoveLeft();
-                Execute(MOVE_SELECTION_TYPE_LEFTTURN);
-            }
-            nextMoveAction(MOVE_SELECTION_TYPE_STRAIGHT);
-            break;
-
-        case 28:
-            // Last Spurt
-            if (DBG) printf("Straight Move %d\r\n", count);
-            //StraightMove();
-            Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-            nextMoveAction(MOVE_SELECTION_TYPE_STOP);
-            break;
-
-        case 29:
-        default:
-            if (DBG) printf("STOP !! %d\r\n", count);
-            Execute(MOVE_SELECTION_TYPE_STOP);
-            break;
-    }
-}
-
-void nextMoveAction(int action) {
-    int next_state;
-    int timeout = 0;
-    while(1) {
-        _delay_ms(10);
-        getSensors();
-        next_state = getAction();
-        if ( next_state ==  action ) {
-            mMoveCount++;
-            break;
-        }
-        timeout++;
-        if (timeout > 2000) {//5000
-            // 1s next
-            mMoveCount++;
-            break;
-        }
-    }
-}
-
-struct PID_DATA pidData;
-
-void PID_init(void);
-void PID_init(void) {
-    pid_Init(K_P * SCALING_FACTOR, K_I * SCALING_FACTOR , K_D * SCALING_FACTOR , &pidData); 
-}
-
-float PID(float cur_value, float req_value) {
-    float pid;
-    float error;
-    
-    error = req_value - cur_value;
-    pid = (pGain * error)  + (iGain * eInteg) + (dGain * (error - ePrev));
-
-    eInteg += error;        // integral is simply a summation over time
-    ePrev = error;          // save previous for derivative
-
-    return pid;
-}
-
-int PID_2(int target_val, int sencer_val) {
+/**
+* PID制御の制御値を更新
+* @brief PID制御の制御値を更新
+* @param (int target_val) 0固定
+* @param (int sencer_val) PID_ctlr
+* @return なし
+*/
+void PID_ctlr_Update(int target_val, int sencer_val) {
     float p,i,d;
     
     diff[0] = diff[1];
@@ -1885,7 +907,7 @@ int PID_2(int target_val, int sencer_val) {
     
     int MV = (int)(pid_lim * (p + i + d));
     
-    printf( "MV = %d\r\n", MV );
+    LOG_INFO( "MV = %d\r\n", MV );
     
     int right_val = pid_base - MV;
     int left_val = pid_base + MV;
@@ -1902,21 +924,6 @@ int PID_2(int target_val, int sencer_val) {
     
     ret_val[0] = right_val + 1023;
     ret_val[1] = left_val;
-    
-    return 0;
-}
-
-void DelayMs(uint8_t ms) {
-    uint8_t i;
-    for( i = 0; i < ms; i++ ) {
-        _delay_ms(1);
-    }
-}
-
-void MainLog(char * msg) {
-    if (DBG) {
-        printf("Main : %s \r\n", msg);
-    }
 }
 
 void initEmergencyStop(void) {
@@ -1924,25 +931,50 @@ void initEmergencyStop(void) {
     PORTD = 0x11;
 }
 
+/**
+ * LEDを設定
+ * @brief LEDを設定
+ * @param (引数名) 引数の説明
+ * @param (引数名) 引数の説明
+ * @return 戻り値の説明
+ * @sa 参照すべき関数を書けばリンクが貼れる
+ * @detail 詳細な説明
+ */
 void setLED(void) {
 #ifdef _LED_ON_
+	//マイコンのレジスタ(DDRC)の設定
     DDRC  = 0x7F;
+	//マイコンの出力ポート(PORTC)の設定
     PORTC = 0x7F;
 #endif // _LED_ON_
 }
 
+/**
+ * LED点灯
+ * @brief LED点灯
+ * @param (int i) LEDの番号
+ * @return なし
+ */
 void LED_on(int i) {
 #ifdef _LED_ON_
     if (i < 1 || i > 6) return;
 	unsigned char c = PORTC;
+	//マイコンの出力ポート(PORTC)の設定
     PORTC = c^(1<<i);
 #endif // _LED_ON_
 }
 
+/**
+ * LED消灯
+ * @brief LED消灯
+ * @param (int i) LEDの番号
+ * @return なし
+ */
 void LED_off(int i) {
 #ifdef _LED_ON_
     if (i < 1 || i > 6) return;
 	unsigned char c = PORTC;
+	//マイコンの出力ポート(PORTC)の設定
     PORTC = ~(c^(1<<i));
 #endif // _LED_ON_
 }
