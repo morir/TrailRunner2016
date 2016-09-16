@@ -446,302 +446,88 @@ int getAction(void) {
 	setLED();
 
 	switch(IR_BitPattern) { 
-	case BIT_111111:
+	//直進関連
+	case BIT_010101:
+	case BIT_110111:
+	case BIT_011100:
+	case BIT_001001:
+		ret = MOVE_SELECTION_TYPE_STRAIGHT;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT\r\n");
+		break;
+	case BIT_000000:
+		ret = MOVE_SELECTION_TYPE_STRAIGHT_2;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT_2\r\n");
+		break;
+	//検索
+	case BIT_111110:
         LED_on(2);
         LED_on(5);
 		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_111111\r\n");		
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_SEARCH\r\n");
 		break;
-	case BIT_101111:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_101111\r\n");
-		break;
-	case BIT_110111:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_110111\r\n");
-		break;
-	case BIT_100111:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_100111\r\n");
-		break;
-	case BIT_111011:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_111011\r\n");
-		break;
-	case BIT_101011:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_101011\r\n");
-		break;
-	case BIT_110011:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		LOG_DEBUG("BIT_110011\r\n");
-		break;
-	case BIT_100011:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		LOG_DEBUG("BIT_100011\r\n");
-		break;
-	case BIT_111101:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_111101\r\n");
-		break;
-	case BIT_101101:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_101101\r\n");
-		break;
-	case BIT_110101:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_110101\r\n");
-		break;
-	case BIT_100101:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_100101\r\n");
-		break;
-	case BIT_111001:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_111001\r\n");
-		break;
-	case BIT_101001:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("BIT_101001\r\n");
-		break;
-	case BIT_110001:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		LOG_DEBUG("BIT_110001\r\n");
-		break;
-	case BIT_100001:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_1;
-		LOG_DEBUG("BIT_100001\r\n");
-		break;
-	case BIT_011111:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		LOG_DEBUG("BIT_011111\r\n");
-		break;
-	case BIT_001111:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		LOG_DEBUG("BIT_001111\r\n");
-		break;
-	case BIT_010111:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_010111\r\n");
-		break;
-	case BIT_000111:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		LOG_DEBUG("BIT_000111\r\n");
-		break;
-	case BIT_011011:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("xBIT_011011xxx\r\n");
-		break;
-	case BIT_001011:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_001011\r\n");
-		break;
-	case BIT_010011:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_010011\r\n");
-		break;
-	case BIT_000011:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_000011\r\n");
-		break;
-	case BIT_011101:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_011101\r\n");
-		break;
+	//直進関連（PID制御）
 	case BIT_001101:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_001101\r\n");
+		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
+		PID_ctlr = 1;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
-	case BIT_010101:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_010101\r\n");
+	case BIT_000100:
+		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
+		PID_ctlr = 3;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
-	case BIT_000101:
+	case BIT_000110:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_000101\r\n");
+		PID_ctlr = 5;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	case BIT_011001:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_011001\r\n");
-		break;
-	case BIT_001001:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_001001\r\n");
-		break;
-	case BIT_010001:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_010001\r\n");
-		break;
-	case BIT_000001:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
-		PID_ctlr = 9;
-		LOG_DEBUG("BIT_000001\r\n");
-		break;
-	case BIT_111110:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		LOG_DEBUG("BIT_111110\r\n");
-		break;
-	case BIT_101110:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_101110\r\n");
-		break;
-	case BIT_110110:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_110110\r\n");
-		break;
-	case BIT_100110:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_100110\r\n");
-		break;
-	case BIT_111010:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_111010\r\n");
-		break;
-	case BIT_101010:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_101010\r\n");
-		break;
-	case BIT_110010:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_110010\r\n");
-		break;
-	case BIT_100010:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_100010\r\n");
-		break;
-	case BIT_111100:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		LOG_DEBUG("BIT_111100\r\n");
-		break;
-	case BIT_101100:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_101100\r\n");
-		break;
-	case BIT_110100:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_110100\r\n");
-		break;
-	case BIT_100100:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_100100\r\n");
-		break;
-	case BIT_111000:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		LOG_DEBUG("BIT_111000\r\n");
-		break;
-	case BIT_101000:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_101000\r\n");
+		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
+		PID_ctlr = -1;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
+		break;	
+	case BIT_010000:
+		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
+		PID_ctlr = -3;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	case BIT_110000:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
-		PID_ctlr = -9;
-		LOG_DEBUG("BIT_110000\r\n");
+		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
+		PID_ctlr = -5;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
+		break;
+	//右旋回関連
+	case BIT_001110:
+	case BIT_001100:
+	case BIT_000111:
+	case BIT_000011:
+		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN\r\n");
+		break;
+	case BIT_000010:
+		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
+		PID_ctlr = 9;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN_3\r\n");
+		break;
+	//左旋回関連	
+	case BIT_111000:
+	case BIT_011000:
+	case BIT_110001:
+	case BIT_100001:
+		ret = MOVE_SELECTION_TYPE_LEFTTURN;
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN\r\n");
 		break;
 	case BIT_100000:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
 		PID_ctlr = -9;
-		LOG_DEBUG("BIT_100000\r\n");
+		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN_3\r\n");
 		break;
-	case BIT_011110:
-		ret = MOVE_SELECTION_TYPE_STRAIGHT;
-		LOG_DEBUG("BIT_011110\r\n");
-		break;
-	case BIT_001110:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_001110\r\n");
-		break;
-	case BIT_010110:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_010110\r\n");
-		break;
-	case BIT_000110:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		PID_ctlr = 3;//2
-		LOG_DEBUG("BIT_000110\r\n");
-		break;
-	case BIT_011010:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_011010\r\n");
-		break;
-	case BIT_001010:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_001010\r\n");
-		break;
-	case BIT_010010:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_010010\r\n");
-		break;
-	case BIT_000010:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 5;//3
-		LOG_DEBUG("BIT_000010\r\n");
-		break;
-	case BIT_011100:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_011100\r\n");
-		break;
-	case BIT_001100:
-		ret = MOVE_SELECTION_TYPE_STRAIGHT;
-		LOG_DEBUG("BIT_001100\r\n");
-		break;
-	case BIT_010100:
-		ret = MOVE_SELECTION_TYPE_S_MOVE_4;
-		LOG_DEBUG("BIT_010100\r\n");
-		break;
-	case BIT_000100:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		PID_ctlr = 1;
-		LOG_DEBUG("BIT_000100\r\n");
-		break;
-	case BIT_011000:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		PID_ctlr = -3;//-2
-		LOG_DEBUG("BIT_011000\r\n");
-		break;
-	case BIT_001000:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		PID_ctlr = -1;
-		LOG_DEBUG("BIT_001000\r\n");
-		break;
-	case BIT_010000:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -5;//-3
-		LOG_DEBUG("BIT_010000\r\n");
-		break;
-	case BIT_000000:
-		ret = MOVE_SELECTION_TYPE_STRAIGHT_2;
-		LOG_DEBUG("BIT_000000\r\n");
-		break;
+	//defaultは検索に設定
 	default:
-		LOG_DEBUG("default\r\n");
+		ret = MOVE_SELECTION_TYPE_SEARCH;
+		LOG_DEBUG("getAction() case is default MOVE_SELECTION_TYPE_SEARCH\r\n");
 		break;
 	}
-	
-	LOG_DEBUG("getAction() ret=%5d PID_ctlr=%5d\r\n",ret ,PID_ctlr );
 	
     return ret;
 }

@@ -112,16 +112,6 @@
 #define MOVE_SELECTION_TYPE_RIGHTTURN_3 1015
 #define MOVE_SELECTION_TYPE_LEFTTURN_3  1016
 
-// Special Move
-#define MOVE_SELECTION_TYPE_S_MOVE_1    1100
-#define MOVE_SELECTION_TYPE_S_MOVE_2    1101
-#define MOVE_SELECTION_TYPE_S_MOVE_3    1102
-#define MOVE_SELECTION_TYPE_S_MOVE_4    1104
-#define MOVE_SELECTION_TYPE_S_MOVE_5    1105
-#define MOVE_SELECTION_TYPE_S_MOVE_6    1106
-#define MOVE_SELECTION_TYPE_S_MOVE_7    1107
-#define MOVE_SELECTION_TYPE_S_MOVE_8    1108
-
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
