@@ -17,30 +17,38 @@
 #include "pid.h"
 
 // ------------------ Defined ------------------
-// Trace status
-#define TRACE_UNKNOWN		2000	// 判定不能(前回の動作を継続)
-#define TRACE_STRAIGHT		2001	// 直進
-#define TRACE_LEFTMOVE		2002	// 左前進
-#define TRACE_RIGHTMOVE		2003	// 右前進
-#define TRACE_LEFTTURN		2004	// 左旋回
-#define TRACE_RIGHTTURN		2005	// 右旋回
-#define TRACE_FINALACTION	2006	// ゴール動作
+// State
+//メイン関数のステータス
+#define STATE_INIT           2000//ボードの初期化
+#define STATE_STOP           2001//ロボットの停止
+#define STATE_START          2002//ロボット始動
+#define STATE_MOVE           2003//ロボット動作中
 
 // Line Sensor
-#define LINE_STATE_BLACK    0		// センサー値でラインが黒判定
-#define LINE_STATE_WHITE    1		// センサー値でラインが白判定
+#define LINE_STATE_BLACK    0//センサー値でラインが黒判定
+#define LINE_STATE_WHITE    1//センサー値でラインが黒判定
+
+
+
+// START SW address
+#define SW_START 0x01   // Emergency Stop 未検証ですがトレイルのロボはこの設定不要だと思う
+
+//#define MAX_STOP_COUNT 20
+//ゴールカウントがこの値を超えるとゴールだと判定
+//2015年は全白だったときの回数をカウントしてゴール判定した
+#define MAX_STOP_COUNT 80
 
 #define _LED_ON_
 
 // ------------------ Method Definition ------------------
-void executeTraceProcess(void);
-int getActionBySensors(void);
-void decideTraceStatus(int action);
-
+void split( char * s1 );
+void initMoveAction(void);
 int decideMoveAction(void);
 int getAction(void);
 
 void getSensors(void);
+int getState(void);
+void setState(int state);
 
 void updateAction(int currentAction, int nextAction);
 
@@ -54,14 +62,11 @@ void LED_off(int i);
 
 // ------------------ Global Variables Definition ------------------
 
-// Serial Message Buffer
+// Serial Message Buf
 int serCmd[SERIAL_BUFFER_SIZE] = {0};
 
-// Current trace status
-int currentStatus = TRACE_STRAIGHT;
-
-// Goal Judgment counter
-int goalCounter = 0;
+// State
+int mState = STATE_INIT;
 
 // Move State
 int mCurrentAction = MOVE_SELECTION_TYPE_STRAIGHT;
@@ -103,126 +108,103 @@ int main(void) {
     initIRSensor();
     MotorInit();
     initSerial();
+    char * readData = NULL; 
+    int isFinish = 0;
     
-	// ロボ動作開始
-
-    // ショートカットモードを作る場合はここに入れる。
-    
-	// トレース動作開始
-	executeTraceProcess();
-
-    // ゴール判定後の動作実質ここから開始？
-	executeFinalAction();
+    while(1){
+        //シリアル接続モード？
+        memset( &serCmd[0], 0x00, sizeof(int) * SERIAL_BUFFER_SIZE );
+        if( checkSerialRead() > 0 ) {
+            readData = getReadBuffer();
+            if( readData != NULL ){
+                LOG_INFO( "readData=%s\n", &readData[0] );
+                split( &readData[0] );
+                switch( serCmd[0] ) {
+                case 1:
+                    break;
+                case 999:
+                    LOG_INFO("finish\n");
+                    isFinish = 1;
+                    break;
+                }
+                if( isFinish > 0 ) {
+                    break;
+                }
+                memset( readData, 0x00, SERIAL_BUFFER_SIZE );
+            }
+            _delay_ms(500);
+        } else {
+            //ロボ動作開始
+            int state = getState();//初期値：ACTION_STATE_INIT
+            //緊急停止がきたら止まる？
+            if (~PIND & SW_START) {
+                // Emergency stopped
+                state = STATE_STOP;
+            }
+            
+			//ゴール判定用のカウント for 2015
+			if(mCount >= MAX_STOP_COUNT) {
+				executeFinalAction();
+				break;
+			}
+				
+            switch (state) {
+            //最初はここ。
+            case STATE_INIT:
+            	initMoveAction();
+                setState(STATE_STOP);
+                break;
+            //初期化の終わりもここ
+            case STATE_STOP:
+                // motor stop
+                Execute(MOVE_SELECTION_TYPE_STOP);
+                setState(STATE_START);
+                break;
+                
+            case STATE_START:
+                setState(STATE_MOVE);
+                break;
+            //実質ここから開始？
+            case STATE_MOVE:
+                setState(decideMoveAction());
+                break;
+            
+            default:
+                setState(STATE_INIT);
+                break;
+            }
+        }
+    }
 }
 
 /**
-* ライントレース動作
-* @brief ライントレース動作
+* 文字列を分割
+* @brief 文字列を分割
+* @param (char * s1) 分割する文字列
 * @return なし
-* @detail ゴール判定条件を満たすまでライントレース動作を行う。
 */
-void executeTraceProcess(void) {
-	int actionBySensors = 0;
-	
-	while (1) {		  	
-		// 現在のセンサー値に対応した動作を取得する。
-    	actionBySensors = getActionBySensors();
-		// 次の動作が最終動作であればループを抜ける。
-		if (actionBySensors == TRACE_FINALACTION) {
-			break;
-		}
-		
-		// 前回動作を踏まえて次の動作を決定する。
-		decideTraceStatus(actionBySensors);
-		Execute(currentStatus);
-	}
+void split( char * s1 ) {
+    char s2[] = " ,";
+    char *tok;
+    int cnt = 0;
+
+    tok = strtok( s1, s2 );
+    while( tok != NULL ){
+        serCmd[cnt++] = atoi(tok);
+        tok = strtok( NULL, s2 );  /* 2回目以降 */
+    }
 }
 
 /**
-* センサー値を参照しアクションを取得する。
-* @brief センサー値を参照しアクションを取得する。
-* @return 戻り値の説明
+* 電源ON後の初期アクション
+* @brief 電源ON後の初期アクション
+* @return なし
+* @detail 電源ON後の初期アクションを設定する。
 */
-int getActionBySensors(void) {
-    int ptn = 0;
-	int ret = 0;
-	
-	// LEDを設定
-	setLED();
-	
-	// センサー値を取得
-	getSensors();
-	
-	// 判定条件数を減らすためゴール判定用センサ値はフィルタリングしておく
-	ptn = ((IR_BitPattern >> 1) << 1);
-	
-	// 直進関連
-	if ((ptn == BIT_010100) ||
-		(ptn == BIT_110110) ||
-		(ptn == BIT_011100) ||
-		(ptn == BIT_001000)) {
-		ret = TRACE_STRAIGHT;
-		LOG_DEBUG("getActionBySensors() TRACE_STRAIGHT\r\n");
-	}
-	// 右前進
-	else if ((ptn == BIT_001100) ||
-			 (ptn == BIT_000100)) {
-		ret = TRACE_RIGHTMOVE;
-		LOG_DEBUG("getActionBySensors() TRACE_RIGHTMOVE\r\n");
-	}
-	// 左前進
-	else if ((ptn == BIT_011000) ||
-			 (ptn == BIT_010000)) {
-		ret = TRACE_LEFTMOVE;
-		LOG_DEBUG("getActionBySensors() TRACE_LEFTMOVE\r\n");
-	}
-	// 右旋回関連
-	else if ((ptn == BIT_001110) ||
-			 (ptn == BIT_000110) ||
-			 (ptn == BIT_000010)) {	 
-		ret = TRACE_RIGHTTURN;
-		LOG_DEBUG("getActionBySensors() TRACE_RIGHTTURN\r\n");
-	}
-	//左旋回関連
-	else if ((ptn == BIT_111000) ||
-			 (ptn == BIT_110000) ||
-			 (ptn == BIT_100000)) {
-		ret = TRACE_LEFTTURN;
-		LOG_DEBUG("getActionBySensors() TRACE_LEFTTURN\r\n");
-	}
-	// その他
-	else {
-		LED_on(2);
-		LED_on(5);
-		ret = TRACE_UNKNOWN;
-		LOG_DEBUG("getActionBySensors() TRACE_UNKNOWN\r\n");
-	}
-
- 	// ゴール判定（ゴール用センサを連続3回検知）
-	if ((IR_BitPattern & BIT_GOAL_JUDGE_ON) == BIT_GOAL_JUDGE_ON) {
-		goalCounter++;
-		if (goalCounter >= 3) {
-			ret = TRACE_FINALACTION;
-		}
-	} else {
-		goalCounter = 0;
-	}
-	
-	return ret;
-}
-
-void decideTraceStatus(int actionBySensor) {
-	// センサの対応動作が TRACE_UNKNOWN なら前回の動作を継続する
-	if (actionBySensor == TRACE_UNKNOWN) {
-		return;
-	}
-	
-	// TODO: 以下の状態遷移別動作処理を実装
-	// STS_TRACE_STRAIGHT
-	// STS_TRACE_LEFTMOVE
-	// STS_TRACE_RIGHTMOVE
-	// STS_TRACE_LEFTTURN
-	// STS_TRACE_RIGHTTURN
+void initMoveAction(void) {
+    //Execute(MOVE_SELECTION_TYPE_LEFTTURN);//左回転・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
+    //_delay_ms(1000);    // 1s・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
+    Execute(MOVE_SELECTION_TYPE_STOP);//次の動作：停止
 }
 
 /**
@@ -232,7 +214,9 @@ void decideTraceStatus(int actionBySensor) {
 * @detail センサー値から次の行動パターンを決定し、戻り値にメインプログラムのステータスを返す。
 */
 int decideMoveAction(void) {
-    int ret_state = 0;//メインプログラムのステータス
+    int ret_state = STATE_MOVE;//メインプログラムのステータス
+	int rightVal = 0;
+	int leftVal = 0;
 	
     getSensors();//現在のセンサー値を取得。
     int currentAction = mCurrentAction;//前回の判定を次の動作判定に使用する
@@ -261,9 +245,8 @@ int decideMoveAction(void) {
     case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
     case MOVE_SELECTION_TYPE_LEFTSIFT_1:
     case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-        //PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
-        //setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
-		StraightMove();
+        PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
+        setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
 
         nextAction = getAction();//現在のセンサー値を使って、次の動作を決定
 
@@ -373,7 +356,7 @@ int decideMoveAction(void) {
 
     default:
         updateAction(0, MOVE_SELECTION_TYPE_STOP);
-        ret_state = 0;
+        ret_state = STATE_STOP;
         break;
     }
 
@@ -409,6 +392,25 @@ void getSensors(void) {
 				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
 				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
 	
+}
+
+/**
+* メイン関数分岐用のステータスを取得
+* @brief メイン関数分岐用のステータスを取得
+* @return メイン関数分岐用のステータス
+*/
+int getState(void) {
+    return mState;
+}
+
+/**
+ * メイン関数分岐用のステータスを設定
+ * @brief メイン関数分岐用のステータスを取得
+ * @param (int state) メイン関数分岐用のステータス
+ * @return なし
+ */
+void setState(int state) {
+    mState = state;
 }
 
 /**
