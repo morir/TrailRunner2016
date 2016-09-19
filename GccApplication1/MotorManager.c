@@ -237,6 +237,11 @@ void PrintCommStatus(int CommStatus) {
 }
 
 void AdjustSpeed(int expectedR, int expectedL) {
+	// 9/20 TODO:
+	// 取得値が目標値より高い値は読み飛ばす。
+	// 目標値の判断はセンサ値で。
+	// 設定値はセンサ値に負荷分で遅くなってしまう速度分を加味する。
+
 	// RIGHT_MOTOR
 	//   Forward：0 - 1023  Backward：1024 - 2047
 	int realR = GetCurrentSpeed(RIGHT_MOTOR);
@@ -290,9 +295,13 @@ void AdjustSpeed(int expectedR, int expectedL) {
 }
 
 int GetCurrentSpeed(int id) {
+	int readValueHigh = 0;
+	int readValueLow = 0;
 	int speed = 0;
 	
-	speed = dxl_read_word(id, 0x26);
+	readValueHigh = dxl_read_byte(id, 39) & 0x3;
+	readValueLow  = dxl_read_byte(id, 38) & 0xF0;
+	speed = ((readValueHigh << 8) + readValueLow);
 	LOG_INFO("Current speed is %d\n", speed);
 	return speed;
 }
