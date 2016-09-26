@@ -447,77 +447,87 @@ int getAction(void) {
 
 	switch(IR_BitPattern) { 
 	//直進関連
+	case BIT_010100:
 	case BIT_010101:
+	case BIT_110110:
 	case BIT_110111:
 	case BIT_011100:
+	case BIT_011101:
+	case BIT_001000:
 	case BIT_001001:
 		ret = MOVE_SELECTION_TYPE_STRAIGHT;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT\r\n");
 		break;
 	case BIT_000000:
+	case BIT_000001:
 		ret = MOVE_SELECTION_TYPE_STRAIGHT_2;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT_2\r\n");
 		break;
 	//検索
 	case BIT_111110:
+	case BIT_111111:
         LED_on(2);
         LED_on(5);
 		ret = MOVE_SELECTION_TYPE_SEARCH;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_SEARCH\r\n");
 		break;
 	//直進関連（PID制御）
+	case BIT_001100:
 	case BIT_001101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
 		PID_ctlr = 1;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	case BIT_000100:
+	case BIT_000101:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
 		PID_ctlr = 3;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	case BIT_000110:
+	case BIT_000111:
 		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
 		PID_ctlr = 5;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
+	case BIT_011000:
 	case BIT_011001:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
 		PID_ctlr = -1;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;	
 	case BIT_010000:
+	case BIT_010001:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
 		PID_ctlr = -3;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	case BIT_110000:
+	case BIT_110001:
 		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
 		PID_ctlr = -5;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
 		break;
 	//右旋回関連
 	case BIT_001110:
-	case BIT_001100:
-	case BIT_000111:
-	case BIT_000011:
+	case BIT_001111:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN\r\n");
 		break;
 	case BIT_000010:
+	case BIT_000011:
 		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
 		PID_ctlr = 9;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN_3\r\n");
 		break;
 	//左旋回関連	
 	case BIT_111000:
-	case BIT_011000:
-	case BIT_110001:
-	case BIT_100001:
+	case BIT_111001:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN\r\n");
 		break;
 	case BIT_100000:
+	case BIT_100001:
 		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
 		PID_ctlr = -9;
 		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN_3\r\n");
