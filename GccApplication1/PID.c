@@ -90,11 +90,11 @@ void pid_Reset_Integrator(pidData_t *pid_st) {
  * @brief PID制御の制御値を更新
  * @param (int target_val) 0固定
  * @param (int sencer_val) PID_ctlr
- * @param (int *rightVal) 右モータの値
- * @param (int *leftVal) 左モータの値
+ * @param (int *out_rightVal) 右モータの値
+ * @param (int *out_leftVal) 左モータの値
  * @return なし
  */
-void PID_ctlr_Update(int target_val, int sencer_val, int *rightVal, int *leftVal) {
+void PID_ctlr_Update(int target_val, int sencer_val, int *out_rightVal, int *out_leftVal) {
 	float p,i,d;
 	
 	diff[0] = diff[1];
@@ -123,8 +123,8 @@ void PID_ctlr_Update(int target_val, int sencer_val, int *rightVal, int *leftVal
 		left_val = pid_base - offSet_val;
 	}
 	
-	*rightVal = right_val + 1023;
-	*leftVal  = left_val;
+	*out_rightVal = right_val + 1023;
+	*out_leftVal  = left_val;
 }
 
 /**
