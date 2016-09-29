@@ -1,6 +1,6 @@
 /**
 * @file DebugLog.h
-* @brief ƒfƒoƒbƒOˆ—
+* @brief ãƒ‡ãƒãƒƒã‚°å‡¦ç†
 * @author f.aimano
 * @date 2016/09/09
 */
@@ -9,39 +9,39 @@
 
 #include <stdio.h>
 
-/** ƒƒOo—Í‚ğİ’è(’è‹`’l‚ª—LŒø‚Èê‡AƒƒO‚ğo—Í‚·‚é) */
-#define LOG_FATAL_ON	//<! ’v–½“I‚ÈƒGƒ‰[ƒƒO‚Ìo—Íİ’è	FíON
-#define LOG_ERROR_ON	//<! ƒGƒ‰[ƒƒO‚Ìo—Íİ’è			FíON
-#define LOG_WARN_ON		//<! Œx‚Ìo—Íİ’è					FíON
-//#define LOG_INFO_ON		//<! î•ñƒƒO‚Ìo—Íİ’è				FíON
-//#define LOG_DEBUG_ON	//<! ƒfƒoƒbƒOƒƒO‚Ìo—Íİ’è			FíOFF
+/** ãƒ­ã‚°å‡ºåŠ›ã‚’è¨­å®š(å®šç¾©å€¤ãŒæœ‰åŠ¹ãªå ´åˆã€ãƒ­ã‚°ã‚’å‡ºåŠ›ã™ã‚‹) */
+#define LOG_FATAL_ON	//<! è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã®å‡ºåŠ›è¨­å®š	ï¼šå¸¸æ™‚ON
+#define LOG_ERROR_ON	//<! ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã®å‡ºåŠ›è¨­å®š			ï¼šå¸¸æ™‚ON
+#define LOG_WARN_ON		//<! è­¦å‘Šã®å‡ºåŠ›è¨­å®š					ï¼šå¸¸æ™‚ON
+//#define LOG_INFO_ON		//<! æƒ…å ±ãƒ­ã‚°ã®å‡ºåŠ›è¨­å®š				ï¼šå¸¸æ™‚ON
+//#define LOG_DEBUG_ON	//<! ãƒ‡ãƒãƒƒã‚°ãƒ­ã‚°ã®å‡ºåŠ›è¨­å®š			ï¼šå¸¸æ™‚OFF
 
 #if defined(LOG_FATAL_ON)
-#define LOG_FATAL(...)	{printf("[FATAL] "); printf(__VA_ARGS__);}	//!< ’v–½“I‚ÈƒGƒ‰[ƒƒOo—Í
+#define LOG_FATAL(...)	{printf("[FATAL] "); printf(__VA_ARGS__);}	//!< è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãƒ­ã‚°å‡ºåŠ›
 #else
-#define LOG_FATAL(...)	//!< ’v–½“I‚ÈƒGƒ‰[ƒƒOo—Í
+#define LOG_FATAL(...)	//!< è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãƒ­ã‚°å‡ºåŠ›
 #endif
 
 #if defined(LOG_ERROR_ON)
-#define LOG_ERROR(...)	{printf("[ERROR] "); printf(__VA_ARGS__);}	//!< ƒGƒ‰[ƒƒOo—Í
+#define LOG_ERROR(...)	{printf("[ERROR] "); printf(__VA_ARGS__);}	//!< ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°å‡ºåŠ›
 #else
-#define LOG_ERROR(...)	//!< ƒGƒ‰[ƒƒOo—Í
+#define LOG_ERROR(...)	//!< ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°å‡ºåŠ›
 #endif
 
 #if defined(LOG_WARN_ON)
-#define LOG_WARN(...)	{printf("[WARN ] "); printf(__VA_ARGS__);}	//!< ŒxƒƒOo—Í
+#define LOG_WARN(...)	{printf("[WARN ] "); printf(__VA_ARGS__);}	//!< è­¦å‘Šãƒ­ã‚°å‡ºåŠ›
 #else
-#define LOG_WARN(...)	//!< ŒxƒƒOo—Í
+#define LOG_WARN(...)	//!< è­¦å‘Šãƒ­ã‚°å‡ºåŠ›
 #endif
 
 #if defined(LOG_INFO_ON)
-#define LOG_INFO(...)	{printf("[INFO ] "); printf(__VA_ARGS__);}	//!< î•ñƒƒOo—Í
+#define LOG_INFO(...)	{printf("[INFO ] "); printf(__VA_ARGS__);}	//!< æƒ…å ±ãƒ­ã‚°å‡ºåŠ›
 #else
-#define LOG_INFO(...)	//!< î•ñƒƒOo—Í
+#define LOG_INFO(...)	//!< æƒ…å ±ãƒ­ã‚°å‡ºåŠ›
 #endif
 
 #if defined(LOG_DEBUG_ON)
-#define LOG_DEBUG(...)  {printf("[DEBUG] "); printf(__VA_ARGS__);}	//!< ƒfƒoƒbƒOƒƒOo—Í
+#define LOG_DEBUG(...)  {printf("[DEBUG] "); printf(__VA_ARGS__);}	//!< ãƒ‡ãƒãƒƒã‚°ãƒ­ã‚°å‡ºåŠ›
 #else
-#define LOG_DEBUG(...)	//!< ƒfƒoƒbƒOƒƒOo—Í
+#define LOG_DEBUG(...)	//!< ãƒ‡ãƒãƒƒã‚°ãƒ­ã‚°å‡ºåŠ›
 #endif
