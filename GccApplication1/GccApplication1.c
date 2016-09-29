@@ -17,38 +17,20 @@
 #include "pid.h"
 
 // ------------------ Defined ------------------
-// State
-//メイン関数のステータス
-#define STATE_INIT           2000//ボードの初期化
-#define STATE_STOP           2001//ロボットの停止
-#define STATE_START          2002//ロボット始動
-#define STATE_MOVE           2003//ロボット動作中
-
 // Line Sensor
-#define LINE_STATE_BLACK    0//センサー値でラインが黒判定
+#define LINE_STATE_BLACK    0//センサー値でラインが白判定
 #define LINE_STATE_WHITE    1//センサー値でラインが黒判定
-
-
-
-// START SW address
-#define SW_START 0x01   // Emergency Stop 未検証ですがトレイルのロボはこの設定不要だと思う
-
-//#define MAX_STOP_COUNT 20
-//ゴールカウントがこの値を超えるとゴールだと判定
-//2015年は全白だったときの回数をカウントしてゴール判定した
-#define MAX_STOP_COUNT 80
 
 #define _LED_ON_
 
 // ------------------ Method Definition ------------------
-void split( char * s1 );
-void initMoveAction(void);
+void executeTraceProcess(void);
+int getSensorPattern(void);
+
 int decideMoveAction(void);
 int getAction(void);
 
 void getSensors(void);
-int getState(void);
-void setState(int state);
 
 void updateAction(int currentAction, int nextAction);
 
@@ -62,11 +44,11 @@ void LED_off(int i);
 
 // ------------------ Global Variables Definition ------------------
 
-// Serial Message Buf
+// Serial Message Buffer
 int serCmd[SERIAL_BUFFER_SIZE] = {0};
 
-// State
-int mState = STATE_INIT;
+// Goal Judgment counter
+int goalCounter = 0;
 
 // Move State
 int mCurrentAction = MOVE_SELECTION_TYPE_STRAIGHT;
@@ -95,6 +77,45 @@ int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を
 
 // ------------------ Method ------------------
 
+// ------------------ Trace action table ------------------
+int traceActionTable[32][7] = {
+//						前回動作	
+// Sensor Pattern		TRACE_STRAIGH		TRACE_LEFTMOVE_1	TRACE_LEFTMOVE_2	TRACE_RIGHTMOVE_1	TRACE_RIGHTMOVE_2	TRACE_LEFTTURN		TRACE_RIGHTTURN
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+/* 00:BIT_00000x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 01:BIT_00001x */		TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,	TRACE_RIGHTMOVE_2,
+/* 02:BIT_00010x */		TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_1,
+/* 03:BIT_00011x */		TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,
+/* 04:BIT_00100x */		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,
+/* 05:BIT_00101x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 06:BIT_00110x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 07:BIT_00111x */		TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,
+/* 08:BIT_01000x */		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_1,
+/* 09:BIT_01001x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 10:BIT_01010x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 11:BIT_01011x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 12:BIT_01100x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 13:BIT_01101x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 14:BIT_01110x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 15:BIT_01111x */		TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,	TRACE_RIGHTTURN,
+/* 16:BIT_10000x */		TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,	TRACE_LEFTMOVE_2,
+/* 17:BIT_10001x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 18:BIT_10010x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 19:BIT_10011x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 20:BIT_10100x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 21:BIT_10101x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 22:BIT_10110x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 23:BIT_10111x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 24:BIT_11000x */		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,
+/* 25:BIT_11001x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 26:BIT_11010x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 27:BIT_11011x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 28:BIT_11100x */		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,
+/* 29:BIT_11101x */		TRACE_STRAIGHT,		TRACE_LEFTMOVE_1,	TRACE_LEFTMOVE_2,	TRACE_RIGHTMOVE_1,	TRACE_RIGHTMOVE_2,	TRACE_LEFTTURN,		TRACE_RIGHTTURN,
+/* 30:BIT_11110x */		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,		TRACE_LEFTTURN,
+/* 31:BIT_11111x */		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT,		TRACE_STRAIGHT
+};
+
 /**
 * エントリーポイント
 * @brief エントリーポイント
@@ -108,103 +129,77 @@ int main(void) {
     initIRSensor();
     MotorInit();
     initSerial();
-    char * readData = NULL; 
-    int isFinish = 0;
     
-    while(1){
-        //シリアル接続モード？
-        memset( &serCmd[0], 0x00, sizeof(int) * SERIAL_BUFFER_SIZE );
-        if( checkSerialRead() > 0 ) {
-            readData = getReadBuffer();
-            if( readData != NULL ){
-                LOG_INFO( "readData=%s\n", &readData[0] );
-                split( &readData[0] );
-                switch( serCmd[0] ) {
-                case 1:
-                    break;
-                case 999:
-                    LOG_INFO("finish\n");
-                    isFinish = 1;
-                    break;
-                }
-                if( isFinish > 0 ) {
-                    break;
-                }
-                memset( readData, 0x00, SERIAL_BUFFER_SIZE );
-            }
-            _delay_ms(500);
-        } else {
-            //ロボ動作開始
-            int state = getState();//初期値：ACTION_STATE_INIT
-            //緊急停止がきたら止まる？
-            if (~PIND & SW_START) {
-                // Emergency stopped
-                state = STATE_STOP;
-            }
-            
-			//ゴール判定用のカウント for 2015
-			if(mCount >= MAX_STOP_COUNT) {
-				executeFinalAction();
-				break;
-			}
-				
-            switch (state) {
-            //最初はここ。
-            case STATE_INIT:
-            	initMoveAction();
-                setState(STATE_STOP);
-                break;
-            //初期化の終わりもここ
-            case STATE_STOP:
-                // motor stop
-                Execute(MOVE_SELECTION_TYPE_STOP);
-                setState(STATE_START);
-                break;
-                
-            case STATE_START:
-                setState(STATE_MOVE);
-                break;
-            //実質ここから開始？
-            case STATE_MOVE:
-                setState(decideMoveAction());
-                break;
-            
-            default:
-                setState(STATE_INIT);
-                break;
-            }
-        }
-    }
+	// ロボ動作開始
+
+    // ショートカットモードを作る場合はここに入れる。
+    
+	// トレース動作開始
+	executeTraceProcess();
+
+    // ゴール判定後の動作実質ここから開始？
+	executeFinalAction();
 }
 
 /**
-* 文字列を分割
-* @brief 文字列を分割
-* @param (char * s1) 分割する文字列
+* ライントレース動作
+* @brief ライントレース動作
 * @return なし
+* @detail ゴール判定条件を満たすまでライントレース動作を行う。
 */
-void split( char * s1 ) {
-    char s2[] = " ,";
-    char *tok;
-    int cnt = 0;
-
-    tok = strtok( s1, s2 );
-    while( tok != NULL ){
-        serCmd[cnt++] = atoi(tok);
-        tok = strtok( NULL, s2 );  /* 2回目以降 */
-    }
+void executeTraceProcess(void) {
+	int previousTraceAction = TRACE_STRAIGHT;
+	int currentTraceAction = TRACE_UNKNOWN;
+	int sensorPattern = BIT_000000;
+	
+	while (1) {
+		// センサ値のビットパターンを取得する。
+		sensorPattern = getSensorPattern();
+		
+		// センサ値のパターンが最終動作であればループを抜ける。
+		if (sensorPattern == TRACE_FINALACTION) {
+			break;
+		}
+		
+		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を決定する。
+		currentTraceAction = traceActionTable[(sensorPattern / 2)][previousTraceAction];
+		LOG_INFO("previousTraceAction %3d: sensorPattern %3d: currentTraceAction: %3d \r\n",
+		         previousTraceAction, sensorPattern, currentTraceAction);
+		Execute(currentTraceAction);
+		
+		// 今回の動作を前回の動作に退避する。
+		previousTraceAction = currentTraceAction;
+	}
 }
 
 /**
-* 電源ON後の初期アクション
-* @brief 電源ON後の初期アクション
-* @return なし
-* @detail 電源ON後の初期アクションを設定する。
+* センサー値のBitパターンを取得する。
+* @brief センサー値を参照し、対応するアクションを取得する。
+* @return 戻り値の説明
 */
-void initMoveAction(void) {
-    //Execute(MOVE_SELECTION_TYPE_LEFTTURN);//左回転・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
-    //_delay_ms(1000);    // 1s・・・電源ONで180度回転させる設定。逆走する場合、これを復帰
-    Execute(MOVE_SELECTION_TYPE_STOP);//次の動作：停止
+int getSensorPattern(void) {
+    int ptn = 0;
+	
+	// LEDを設定
+	setLED();
+	
+	// センサー値を取得
+	getSensors();
+	
+	// 判定条件数を減らすためゴール判定用センサ値をフィルタリングする。
+	ptn = ((IR_BitPattern >> 1) << 1);
+	
+ 	// ゴール判定（ゴール用センサを連続で 5 回検知した場合に設定）
+	if ((IR_BitPattern & BIT_GOAL_JUDGE_ON) == BIT_GOAL_JUDGE_ON) {
+		goalCounter++;
+		if (goalCounter >= 5) {
+			ptn = TRACE_FINALACTION;
+		}
+	} else {
+		goalCounter = 0;
+	}
+	
+	return ptn;
 }
 
 /**
@@ -214,7 +209,7 @@ void initMoveAction(void) {
 * @detail センサー値から次の行動パターンを決定し、戻り値にメインプログラムのステータスを返す。
 */
 int decideMoveAction(void) {
-    int ret_state = STATE_MOVE;//メインプログラムのステータス
+    int ret_state = 0;//メインプログラムのステータス
 	int rightVal = 0;
 	int leftVal = 0;
 	
@@ -245,8 +240,9 @@ int decideMoveAction(void) {
     case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
     case MOVE_SELECTION_TYPE_LEFTSIFT_1:
     case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-        PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
-        setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
+        //PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
+        //setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
+		StraightMove();
 
         nextAction = getAction();//現在のセンサー値を使って、次の動作を決定
 
@@ -356,7 +352,7 @@ int decideMoveAction(void) {
 
     default:
         updateAction(0, MOVE_SELECTION_TYPE_STOP);
-        ret_state = STATE_STOP;
+        ret_state = 0;
         break;
     }
 
@@ -392,25 +388,6 @@ void getSensors(void) {
 				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
 				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
 	
-}
-
-/**
-* メイン関数分岐用のステータスを取得
-* @brief メイン関数分岐用のステータスを取得
-* @return メイン関数分岐用のステータス
-*/
-int getState(void) {
-    return mState;
-}
-
-/**
- * メイン関数分岐用のステータスを設定
- * @brief メイン関数分岐用のステータスを取得
- * @param (int state) メイン関数分岐用のステータス
- * @return なし
- */
-void setState(int state) {
-    mState = state;
 }
 
 /**
