@@ -112,6 +112,17 @@
 #define MOVE_SELECTION_TYPE_RIGHTTURN_3 1015
 #define MOVE_SELECTION_TYPE_LEFTTURN_3  1016
 
+// Trace pattern
+#define TRACE_UNKNOWN		2000	// 判定不能(前回の動作を継続)
+#define TRACE_STRAIGHT		2001	// 直進
+#define TRACE_LEFTMOVE_1	2002	// 左弱前進
+#define TRACE_LEFTMOVE_2	2003	// 左弱前進
+#define TRACE_RIGHTMOVE_1	2004	// 右強前進
+#define TRACE_RIGHTMOVE_2	2005	// 右強前進
+#define TRACE_LEFTTURN		2006	// 左旋回
+#define TRACE_RIGHTTURN		2007	// 右旋回
+#define TRACE_FINALACTION	2008	// ゴール動作
+
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
