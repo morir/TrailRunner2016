@@ -10,15 +10,15 @@
 #include "DebugLog.h"
 
 // PID Param
-#define K_P     0.70     // P param 1.00FPID§Œä‚Ìƒpƒ‰ƒ[ƒ^(À“®ì‚Å‡‚í‚¹‚±‚ñ‚¾‚Ì‚Åà–¾‚Å‚«‚Ü‚¹‚ñ)
-#define K_I     0.50    // I param 5.00FPID§Œä‚Ìƒpƒ‰ƒ[ƒ^(À“®ì‚Å‡‚í‚¹‚±‚ñ‚¾‚Ì‚Åà–¾‚Å‚«‚Ü‚¹‚ñ)
-#define K_D     0.50  // D param 0.0003FPID§Œä‚Ìƒpƒ‰ƒ[ƒ^(À“®ì‚Å‡‚í‚¹‚±‚ñ‚¾‚Ì‚Åà–¾‚Å‚«‚Ü‚¹‚ñ)
-//«‚±‚Ì”’l‚ğ‘å‚«‚­‚·‚é‚ÆA’¼i‹y‚Ñ­‚µ‹È‚ª‚é‚Ì‘¬“x‚ª‚ ‚ª‚éB
+#define K_P     0.70     // P param 1.00ï¼šPIDåˆ¶å¾¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(å®Ÿå‹•ä½œã§åˆã‚ã›ã“ã‚“ã ã®ã§èª¬æ˜ã§ãã¾ã›ã‚“)
+#define K_I     0.50    // I param 5.00ï¼šPIDåˆ¶å¾¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(å®Ÿå‹•ä½œã§åˆã‚ã›ã“ã‚“ã ã®ã§èª¬æ˜ã§ãã¾ã›ã‚“)
+#define K_D     0.50  // D param 0.0003ï¼šPIDåˆ¶å¾¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(å®Ÿå‹•ä½œã§åˆã‚ã›ã“ã‚“ã ã®ã§èª¬æ˜ã§ãã¾ã›ã‚“)
+//â†“ã“ã®æ•°å€¤ã‚’å¤§ããã™ã‚‹ã¨ã€ç›´é€²åŠã³å°‘ã—æ›²ãŒã‚‹æ™‚ã®é€Ÿåº¦ãŒã‚ãŒã‚‹ã€‚
 #define pid_base 500   // base speed P_CW_SPEED_NOMAL 500
-#define pid_lim 30     // control value 30FPID§Œä‚Ìƒpƒ‰ƒ[ƒ^(À“®ì‚Å‡‚í‚¹‚±‚ñ‚¾‚Ì‚Åà–¾‚Å‚«‚Ü‚¹‚ñ)
-#define DELTA_T 0.002   // delta T 0.002FPID§Œä‚Ìƒpƒ‰ƒ[ƒ^(À“®ì‚Å‡‚í‚¹‚±‚ñ‚¾‚Ì‚Åà–¾‚Å‚«‚Ü‚¹‚ñ)
-//PID§Œä‚ÌŒvZŒ‹‰Ê‚ÅA·•ª‚ª‘å‚«‚·‚¬‚é‚Æ‚«‚ÌãŒÀA‰ºŒÀ’lB
-//ƒx[ƒX‘¬“x‚É‘Î‚µ‚Ä‚±‚Ì”’l•ª‚Ü‚Å‚Ì+-‚ğ‹–—e‚µ‚Ü‚·
+#define pid_lim 30     // control value 30ï¼šPIDåˆ¶å¾¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(å®Ÿå‹•ä½œã§åˆã‚ã›ã“ã‚“ã ã®ã§èª¬æ˜ã§ãã¾ã›ã‚“)
+#define DELTA_T 0.002   // delta T 0.002ï¼šPIDåˆ¶å¾¡ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿(å®Ÿå‹•ä½œã§åˆã‚ã›ã“ã‚“ã ã®ã§èª¬æ˜ã§ãã¾ã›ã‚“)
+//PIDåˆ¶å¾¡ã®è¨ˆç®—çµæœã§ã€å·®åˆ†ãŒå¤§ãã™ãã‚‹ã¨ãã®ä¸Šé™ã€ä¸‹é™å€¤ã€‚
+//ãƒ™ãƒ¼ã‚¹é€Ÿåº¦ã«å¯¾ã—ã¦ã“ã®æ•°å€¤åˆ†ã¾ã§ã®+-ã‚’è¨±å®¹ã—ã¾ã™
 #define offSet_val 250 //450;//300
 
 int diff[2]    = {0,0};
@@ -86,13 +86,13 @@ void pid_Reset_Integrator(pidData_t *pid_st) {
 }
 
 /**
- * PID§Œä‚Ì§Œä’l‚ğXV
- * @brief PID§Œä‚Ì§Œä’l‚ğXV
- * @param (int target_val) 0ŒÅ’è
+ * PIDåˆ¶å¾¡ã®åˆ¶å¾¡å€¤ã‚’æ›´æ–°
+ * @brief PIDåˆ¶å¾¡ã®åˆ¶å¾¡å€¤ã‚’æ›´æ–°
+ * @param (int target_val) 0å›ºå®š
  * @param (int sencer_val) PID_ctlr
- * @param (int *out_rightVal) ‰Eƒ‚[ƒ^‚Ì’l
- * @param (int *out_leftVal) ¶ƒ‚[ƒ^‚Ì’l
- * @return ‚È‚µ
+ * @param (int *out_rightVal) å³ãƒ¢ãƒ¼ã‚¿ã®å€¤
+ * @param (int *out_leftVal) å·¦ãƒ¢ãƒ¼ã‚¿ã®å€¤
+ * @return ãªã—
  */
 void PID_ctlr_Update(int target_val, int sencer_val, int *out_rightVal, int *out_leftVal) {
 	float p,i,d;
@@ -128,9 +128,9 @@ void PID_ctlr_Update(int target_val, int sencer_val, int *out_rightVal, int *out
 }
 
 /**
- * PID‚Ìdiff[]‚Æintegral‚ğ0‚Å‰Šú‰»‚·‚éB
- * @brief PID‚Ìdiff[]‚ğ0‚Å‰Šú‰»‚·‚éB
- * @return ‚È‚µ
+ * PIDã®diff[]ã¨integralã‚’0ã§åˆæœŸåŒ–ã™ã‚‹ã€‚
+ * @brief PIDã®diff[]ã‚’0ã§åˆæœŸåŒ–ã™ã‚‹ã€‚
+ * @return ãªã—
  */
 void PID_reset_diff_integral()
 {
