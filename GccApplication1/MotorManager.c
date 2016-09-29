@@ -51,6 +51,7 @@ void Execute(int type) {
     switch (type) {
         case MOVE_SELECTION_TYPE_START:
         case MOVE_SELECTION_TYPE_STRAIGHT:
+		case TRACE_STRAIGHT:
             LOG_INFO("Straight Move\r\n");
             StraightMove();
             break;
@@ -59,26 +60,32 @@ void Execute(int type) {
 			StopMove();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
+		case TRACE_RIGHTMOVE_1:
             LOG_INFO("Right Shift 1\r\n");
             StraightMoveRightShift();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_1:
+		case TRACE_LEFTMOVE_1:
             LOG_INFO("Left Shift 1\r\n");
             StraightMoveLeftShift();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
+		case TRACE_RIGHTMOVE_2:
             LOG_INFO("Right Shift 2\r\n");
             StraightMoveRightShift2();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_2:
+		case TRACE_LEFTMOVE_2:
             LOG_INFO("Left Shift 2\r\n");
             StraightMoveLeftShift2();
             break;
         case MOVE_SELECTION_TYPE_RIGHTTURN:
+		case TRACE_RIGHTTURN:
             LOG_INFO("Right Turn\r\n");
             TurnLowMoveRight();
             break;
         case MOVE_SELECTION_TYPE_LEFTTURN:
+		case TRACE_LEFTTURN:
             LOG_INFO("Left Turn\r\n");
             TurnLowMoveLeft();
             break;
@@ -238,12 +245,12 @@ void PrintCommStatus(int CommStatus) {
 
 void AdjustSpeed(int expectedR, int expectedL) {
 	// 9/20 TODO:
-	// æ“¾’l‚ª–Ú•W’l‚æ‚è‚‚¢’l‚Í“Ç‚İ”ò‚Î‚·B
-	// –Ú•W’l‚Ì”»’f‚ÍƒZƒ“ƒT’l‚ÅB
-	// İ’è’l‚ÍƒZƒ“ƒT’l‚É•‰‰×•ª‚Å’x‚­‚È‚Á‚Ä‚µ‚Ü‚¤‘¬“x•ª‚ğ‰Á–¡‚·‚éB
+	// å–å¾—å€¤ãŒç›®æ¨™å€¤ã‚ˆã‚Šé«˜ã„å€¤ã¯èª­ã¿é£›ã°ã™ã€‚
+	// ç›®æ¨™å€¤ã®åˆ¤æ–­ã¯ã‚»ãƒ³ã‚µå€¤ã§ã€‚
+	// è¨­å®šå€¤ã¯ã‚»ãƒ³ã‚µå€¤ã«è² è·åˆ†ã§é…ããªã£ã¦ã—ã¾ã†é€Ÿåº¦åˆ†ã‚’åŠ å‘³ã™ã‚‹ã€‚
 
 	// RIGHT_MOTOR
-	//   ForwardF0 - 1023  BackwardF1024 - 2047
+	//   Forwardï¼š0 - 1023  Backwardï¼š1024 - 2047
 	int realR = GetCurrentSpeed(RIGHT_MOTOR);
 	int diffR = (expectedR - realR);
 	int adjustedR = (expectedR + diffR);
@@ -267,7 +274,7 @@ void AdjustSpeed(int expectedR, int expectedL) {
 	}
 
 	// LEFT_MOTOR
-	//   ForwardF1024 - 2047  BackwardF0 - 1023
+	//   Forwardï¼š1024 - 2047  Backwardï¼š0 - 1023
 	int realL = GetCurrentSpeed(LEFT_MOTOR);
 	int diffL = (expectedL - realL);
 	int adjustedL = (expectedL + diffL);
