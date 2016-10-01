@@ -113,15 +113,14 @@
 #define MOVE_SELECTION_TYPE_LEFTTURN_3  1016
 
 // Trace pattern
-#define TRACE_UNKNOWN		2000	// 判定不能(前回の動作を継続)
-#define TRACE_STRAIGHT		2001	// 直進
-#define TRACE_LEFTMOVE_1	2002	// 左弱前進
-#define TRACE_LEFTMOVE_2	2003	// 左弱前進
-#define TRACE_RIGHTMOVE_1	2004	// 右強前進
-#define TRACE_RIGHTMOVE_2	2005	// 右強前進
-#define TRACE_LEFTTURN		2006	// 左旋回
-#define TRACE_RIGHTTURN		2007	// 右旋回
-#define TRACE_FINALACTION	2008	// ゴール動作
+#define TRACE_STRAIGHT		0	// 直進
+#define TRACE_L_STRAIGHT	1	// 左前進
+#define TRACE_L_ROUND		2	// 左カーブ
+#define TRACE_L_TURN		5	// 左旋回
+#define TRACE_R_STRAIGHT	3	// 右前進
+#define TRACE_R_ROUND		4	// 右カーブ
+#define TRACE_R_TURN		6	// 右旋回
+#define TRACE_FINALACTION	7	// ゴール動作
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
@@ -140,6 +139,13 @@ void TurnMoveLeft(void);
 void TurnLowMoveRight(void);
 void TurnLowMoveLeft(void);
 void BackMove(void);
+void Move(int leftSpeed, int rightSpeed);
+void LeftStraightMove(void);
+void RightStraightMove(void);
+void LeftRoundMove(void);
+void RightRoundMove(void);
+void LeftTurnMove(void);
+void RightTurnMove(void);
 void PrintErrorCode(void);
 void PrintCommStatus(int CommStatus);
 

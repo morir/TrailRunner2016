@@ -12,6 +12,11 @@
 #define DBG 1
 //#define _MOTOR_OFF_
 
+// Speed settings
+int BaseSpeed = 400;
+float LowRate = 0.75;
+float HighRate = 0.5;
+
 void MotorInit(void) {
     dxl_initialize( 0, DEFAULT_BAUDNUM ); // Not using device index
     //Wheel Mode
@@ -52,7 +57,7 @@ void Execute(int type) {
         case MOVE_SELECTION_TYPE_START:
         case MOVE_SELECTION_TYPE_STRAIGHT:
 		case TRACE_STRAIGHT:
-            LOG_INFO("Straight Move\r\n");
+            LOG_INFO("Straight\r\n");
             StraightMove();
             break;
         case MOVE_SELECTION_TYPE_STOP:
@@ -60,32 +65,26 @@ void Execute(int type) {
 			StopMove();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
-		case TRACE_RIGHTMOVE_1:
             LOG_INFO("Right Shift 1\r\n");
             StraightMoveRightShift();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_1:
-		case TRACE_LEFTMOVE_1:
             LOG_INFO("Left Shift 1\r\n");
             StraightMoveLeftShift();
             break;
         case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
-		case TRACE_RIGHTMOVE_2:
             LOG_INFO("Right Shift 2\r\n");
             StraightMoveRightShift2();
             break;
         case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-		case TRACE_LEFTMOVE_2:
             LOG_INFO("Left Shift 2\r\n");
             StraightMoveLeftShift2();
             break;
         case MOVE_SELECTION_TYPE_RIGHTTURN:
-		case TRACE_RIGHTTURN:
             LOG_INFO("Right Turn\r\n");
             TurnLowMoveRight();
             break;
         case MOVE_SELECTION_TYPE_LEFTTURN:
-		case TRACE_LEFTTURN:
             LOG_INFO("Left Turn\r\n");
             TurnLowMoveLeft();
             break;
@@ -109,6 +108,30 @@ void Execute(int type) {
             StraightLowMove();
             break;
 			
+		case TRACE_L_STRAIGHT:
+            LOG_INFO("Left Straight\r\n");
+            LeftStraightMove();
+            break;
+		case TRACE_R_STRAIGHT:
+			LOG_INFO("Right Straight\r\n");
+			RightStraightMove();
+			break;
+		case TRACE_L_ROUND:
+			LOG_INFO("Left Round\r\n");
+			LeftRoundMove();
+			break;
+		case TRACE_R_ROUND:
+            LOG_INFO("Right Round\r\n");
+            RightRoundMove();
+            break;
+		case TRACE_L_TURN:
+            LOG_INFO("Left Turn\r\n");
+            LeftTurnMove();
+            break;	
+		case TRACE_R_TURN:
+            LOG_INFO("Right Turn\r\n");
+            RightTurnMove();
+            break;
         default:
             break;
     }
@@ -130,11 +153,6 @@ void setParamMoveAction(int right, int left) {
 void StopMove(void) {
     MotorControl( RIGHT_MOTOR, 1024 );
     MotorControl( LEFT_MOTOR, 0 );
-}
-
-void StraightMove(void) {
-    MotorControl( RIGHT_MOTOR, 1623 ); //300 P_CCW_SPEED_NOMAL 1632
-    MotorControl( LEFT_MOTOR, 600 ); //300 P_CW_SPEED_NOMAL 609
 }
 
 void StraightLowMove(void) {
@@ -185,6 +203,62 @@ void TurnLowMoveLeft(void) {
 void BackMove(void) {
     MotorControl( RIGHT_MOTOR, 250 ); //250 P_CW_SPEED_TURN 509
     MotorControl( LEFT_MOTOR, 1273 ); //R250 P_CCW_SPEED_TURN 1532
+}
+
+void Move(int leftSpeed, int rightSpeed)
+{
+	LOG_INFO("left = %3d, Right = %3d\r\n", leftSpeed, rightSpeed);
+    MotorControl(LEFT_MOTOR, leftSpeed);
+    MotorControl(RIGHT_MOTOR, rightSpeed);
+}
+
+void StraightMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftStraightMove(void) {
+	int leftSpeed = (int)((float)BaseSpeed * LowRate);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightStraightMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + (int)((float)BaseSpeed * LowRate));
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftRoundMove(void) {
+	int leftSpeed = (int)((float)BaseSpeed * HighRate);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightRoundMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + (int)((float)BaseSpeed * HighRate));
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftTurnMove(void) {
+	int leftSpeed = (1024 + BaseSpeed);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightTurnMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = BaseSpeed;
+
+	Move(leftSpeed, rightSpeed);
 }
 
 void PrintErrorCode() {

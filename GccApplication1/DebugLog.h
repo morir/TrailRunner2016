@@ -13,7 +13,7 @@
 #define LOG_FATAL_ON	//<! 致命的なエラーログの出力設定	：常時ON
 #define LOG_ERROR_ON	//<! エラーログの出力設定			：常時ON
 #define LOG_WARN_ON		//<! 警告の出力設定					：常時ON
-//#define LOG_INFO_ON		//<! 情報ログの出力設定				：常時ON
+#define LOG_INFO_ON		//<! 情報ログの出力設定				：常時ON
 //#define LOG_DEBUG_ON	//<! デバッグログの出力設定			：常時OFF
 
 #if defined(LOG_FATAL_ON)

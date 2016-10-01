@@ -111,6 +111,9 @@
 //#define COMPARE_VALUE 450//450
 #define COMPARE_VALUE 300//450
 
+// ゴールセンサの検知最大数
+#define GOAL_DETECTED_MAX_COUNT 10
+
 unsigned int values;
 
 void initIRSensor(void);
