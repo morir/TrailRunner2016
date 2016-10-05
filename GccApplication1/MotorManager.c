@@ -14,8 +14,8 @@
 
 // Speed settings
 int BaseSpeed = 400;
-float LowRate = 0.75;
-float HighRate = 0.5;
+float LowRate = 0.90;
+float HighRate = 0.80;
 
 void MotorInit(void) {
     dxl_initialize( 0, DEFAULT_BAUDNUM ); // Not using device index
@@ -133,6 +133,7 @@ void Execute(int type) {
             RightTurnMove();
             break;
         default:
+            LOG_INFO("Unknown type[%d]\r\n", type);
             break;
     }
 	
