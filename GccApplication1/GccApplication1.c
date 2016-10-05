@@ -157,12 +157,10 @@ void executeTraceProcess(void) {
 		// センサ値のビットパターンを取得する。
 		sensorPattern = getSensorPattern();
 
-/* 暫定コメントアウト		
 		// センサ値のパターンが最終動作であればループを抜ける。
 		if (sensorPattern == TRACE_FINALACTION) {
 			break;
 		}
-*/
 
 		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を決定する。
 		currentTraceAction = traceActionTable[(sensorPattern / 2)][previousTraceAction];
@@ -198,17 +196,23 @@ int getSensorPattern(void) {
 	// 判定条件数を減らすためゴール判定用センサ値をフィルタリングする。
 	ptn = ((IR_BitPattern >> 1) << 1);
 
-/* 暫定コメントアウト	
- 	// ゴール判定（ゴール用センサを連続で規定数回検知した場合に設定）
-	if ((IR_BitPattern & BIT_GOAL_JUDGE_ON) == BIT_GOAL_JUDGE_ON) {
+	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
+	if (IR[GOAL_JUDGE] >= 300) {
 		goalCounter++;
-		if (goalCounter >= GOAL_DETECTED_MAX_COUNT) {
+		if (goalCounter >= 10 && 
+			( (IR_BitPattern == BIT_000001 ) ||
+			  (IR_BitPattern == BIT_000011 ) ||
+			  (IR_BitPattern == BIT_000111 ) ||
+			  (IR_BitPattern == BIT_001111 ) ||
+			  (IR_BitPattern == BIT_011111 ) ||
+			  (IR_BitPattern == BIT_111111 )
+			)){
 			ptn = TRACE_FINALACTION;
 		}
 	} else {
+		//一度でも白なら判定解除
 		goalCounter = 0;
 	}
-*/
 
 	return ptn;
 }
