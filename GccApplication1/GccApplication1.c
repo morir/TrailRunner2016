@@ -201,11 +201,10 @@ int getSensorPattern(void) {
 	ptn = ((IR_BitPattern >> 1) << 1);
 
 	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
-	if (IR[GOAL_JUDGE] >= 300) {
-		goalCounter++;
-		if (goalCounter >= 10 && 
-			( (IR_BitPattern == BIT_000001 ) ||
-			  (IR_BitPattern == BIT_000011 ) ||
+	if (IR[GOAL_JUDGE] >= 700) {
+		//goalCounter++;
+		if (goalCounter >= 30 && 
+			( (IR_BitPattern == BIT_000011 ) ||
 			  (IR_BitPattern == BIT_000111 ) ||
 			  (IR_BitPattern == BIT_001111 ) ||
 			  (IR_BitPattern == BIT_011111 ) ||
