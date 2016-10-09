@@ -110,6 +110,8 @@
 
 //#define COMPARE_VALUE 450//450
 #define COMPARE_VALUE 300//450
+#define COMPARE_VALUE_OTHER 500//ライントレース用の追加した1個のセンサー
+#define COMPARE_VALUE_GOAL 700//ゴール判定用のセンサー用
 
 // ゴールセンサの検知最大数
 #define GOAL_DETECTED_MAX_COUNT 10
