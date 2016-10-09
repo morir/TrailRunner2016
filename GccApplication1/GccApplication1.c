@@ -173,6 +173,18 @@ void executeTraceProcess(void) {
 		         previousTraceAction, sensorPattern, currentTraceAction);
 		if(currentTraceAction != previousTraceAction)
 		{
+
+			//左旋回中復帰時の動作
+			if( previousTraceAction == TRACE_L_TURN && currentTraceAction == TRACE_STRAIGHT) {
+				RightTurnMove();//逆回転
+				_delay_ms(100);	// 100ms 逆回転を入力（強さと時間は調整必要）
+			}
+			
+			//右旋回中復帰時の動作
+			if (previousTraceAction == TRACE_R_TURN && currentTraceAction == TRACE_STRAIGHT) {
+				LeftTurnMove();//逆回転
+				_delay_ms(100);	// 100ms 逆回転を入力（強さと時間は調整必要）
+			}
 			Execute(currentTraceAction);
 		}
 		
