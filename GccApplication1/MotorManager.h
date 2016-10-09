@@ -120,7 +120,7 @@
 #define TRACE_R_STRAIGHT	3	// 右前進
 #define TRACE_R_ROUND		4	// 右カーブ
 #define TRACE_R_TURN		6	// 右旋回
-#define TRACE_FINALACTION	7	// ゴール動作
+#define TRACE_FINALACTION	999	// ゴール動作
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
