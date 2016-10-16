@@ -37,8 +37,8 @@
 #define DELAY_MSEC          10      // Delay time
 #define OVER_RUN_TIME       1500    // Over run time
 #else // DINAMIXEL_AX_12
-#define RIGHT_MOTOR         30      // Right Motor address
-#define LEFT_MOTOR          31      // Left Motor address
+#define RIGHT_MOTOR         32      // Right Motor address
+#define LEFT_MOTOR          33      // Left Motor address
 #define DELAY_MSEC          1       // Delay time
 #define OVER_RUN_TIME       500     // Over run time
 #endif // DINAMIXEL_AX_12
@@ -116,10 +116,14 @@
 #define TRACE_STRAIGHT		0	// 直進
 #define TRACE_L_STRAIGHT	1	// 左前進
 #define TRACE_L_ROUND		2	// 左カーブ
+#define TRACE_L_TURN_START	7	// 左旋回開始
 #define TRACE_L_TURN		5	// 左旋回
+#define TRACE_L_TURN_END	9	// 左旋回終了
 #define TRACE_R_STRAIGHT	3	// 右前進
 #define TRACE_R_ROUND		4	// 右カーブ
+#define TRACE_R_TURN_START	10	// 右旋回開始
 #define TRACE_R_TURN		6	// 右旋回
+#define TRACE_R_TURN_END	11	// 右旋回終了
 #define TRACE_FINALACTION	999	// ゴール動作
 
 // ------------------ Method Definition ------------------
