@@ -7,10 +7,12 @@
 
 // ------------------ Defined ------------------
 // Line Sensor
-#define LINE_STATE_BLACK    0//�Z���T�[�l�Ń��C����������
-#define LINE_STATE_WHITE    1//�Z���T�[�l�Ń��C����������
+#define LINE_STATE_BLACK    0//センサー値でラインが白判定
+#define LINE_STATE_WHITE    1//センサー値でラインが黒判定
 
 #define _LED_ON_
+
+#define DELAY_MAX_TIME      (500)//delay時間の最大値(ミリ秒)
 
 // Move Type
 #define MOVE_SELECTION_TYPE_START       1000
@@ -32,18 +34,18 @@
 #define MOVE_SELECTION_TYPE_LEFTTURN_3  1016
 
 // Trace pattern
-#define TRACE_STRAIGHT		0	// ���i
-#define TRACE_L_STRAIGHT	1	// ���O�i
-#define TRACE_L_ROUND		2	// ���J�[�u
-#define TRACE_R_STRAIGHT	3	// �E�O�i
-#define TRACE_R_ROUND		4	// �E�J�[�u
-#define TRACE_L_TURN		5	// ������
-#define TRACE_R_TURN		6	// �E����
-#define TRACE_FINALACTION	7	// �S�[������
+#define TRACE_STRAIGHT		0	// 直進
+#define TRACE_L_STRAIGHT	1	// 左前進
+#define TRACE_L_ROUND		2	// 左カーブ
+#define TRACE_R_STRAIGHT	3	// 右前進
+#define TRACE_R_ROUND		4	// 右カーブ
+#define TRACE_L_TURN		5	// 左旋回
+#define TRACE_R_TURN		6	// 右旋回
+#define TRACE_FINALACTION	7	// ゴール動作
 
 #define SERIAL_BUFFER_SIZE 32
 
-/* �ԊO���Z���T�̃|�[�g�ԍ� */
+/* 赤外線センサのポート番号 */
 #define     ADC_PORT_1  (1)
 #define     ADC_PORT_2  (2)
 #define     ADC_PORT_3  (3)
@@ -51,134 +53,134 @@
 #define     ADC_PORT_5  (5)
 #define     ADC_PORT_6  (6)
 
-/* �ԊO���Z���T�̖���
- * ���L�̓Z���T�̔z�u
- * �i�s�������@LEFT_OUTSIDE | LEFT_INSIDE | CENTER     | RIGHT_INSIDE | RIGHT_INSIDE | RIGHT_OUTSIDE |
+/* 赤外線センサの役割
+ * 下記はセンサの配置
+ * 進行方向↑　LEFT_OUTSIDE | LEFT_INSIDE | CENTER     | RIGHT_INSIDE | RIGHT_INSIDE | RIGHT_OUTSIDE |
  *                                          GOAL_JUDGE
  */
-#define LEFT_OUTSIDE	(ADC_PORT_4)	//!< �i�s�������O���̃Z���T
-#define LEFT_INSIDE		(ADC_PORT_1)	//!< �i�s���������̃Z���T
-#define CENTER			(ADC_PORT_6)	//!< ���S�̃Z���T
-#define RIGHT_INSIDE	(ADC_PORT_3)	//!< �i�s�����E���̃Z���T
-#define RIGHT_OUTSIDE	(ADC_PORT_5)	//!< �i�s�����E�O���̃Z���T
-#define GOAL_JUDGE		(ADC_PORT_2)	//!< �S�[������p�̃Z���T
+#define LEFT_OUTSIDE	(ADC_PORT_4)	//!< 進行方向左外側のセンサ
+#define LEFT_INSIDE		(ADC_PORT_1)	//!< 進行方向左側のセンサ
+#define CENTER			(ADC_PORT_6)	//!< 中心のセンサ
+#define RIGHT_INSIDE	(ADC_PORT_3)	//!< 進行方向右側のセンサ
+#define RIGHT_OUTSIDE	(ADC_PORT_5)	//!< 進行方向右外側のセンサ
+#define GOAL_JUDGE		(ADC_PORT_2)	//!< ゴール判定用のセンサ
 
 
-/* �ԊO���Z���T�̏��(BIT�p�^�[��)��BIT�}�X�N */
-#define BIT_000000 (0x0000) //!< 2�i���F000000
-#define BIT_000001 (0x0001) //!< 2�i���F000001
-#define BIT_000010 (0x0002) //!< 2�i���F000010
-#define BIT_000011 (0x0003) //!< 2�i���F000011
-#define BIT_000100 (0x0004) //!< 2�i���F000100
-#define BIT_000101 (0x0005) //!< 2�i���F000101
-#define BIT_000110 (0x0006) //!< 2�i���F000110
-#define BIT_000111 (0x0007) //!< 2�i���F000111
-#define BIT_001000 (0x0008) //!< 2�i���F001000
-#define BIT_001001 (0x0009) //!< 2�i���F001001
-#define BIT_001010 (0x000A) //!< 2�i���F001010
-#define BIT_001011 (0x000B) //!< 2�i���F001011
-#define BIT_001100 (0x000C) //!< 2�i���F001100
-#define BIT_001101 (0x000D) //!< 2�i���F001101
-#define BIT_001110 (0x000E) //!< 2�i���F001110
-#define BIT_001111 (0x000F) //!< 2�i���F001111
-#define BIT_010000 (0x0010) //!< 2�i���F010000
-#define BIT_010001 (0x0011) //!< 2�i���F010001
-#define BIT_010010 (0x0012) //!< 2�i���F010010
-#define BIT_010011 (0x0013) //!< 2�i���F010011
-#define BIT_010100 (0x0014) //!< 2�i���F010100
-#define BIT_010101 (0x0015) //!< 2�i���F010101
-#define BIT_010110 (0x0016) //!< 2�i���F010110
-#define BIT_010111 (0x0017) //!< 2�i���F010111
-#define BIT_011000 (0x0018) //!< 2�i���F011000
-#define BIT_011001 (0x0019) //!< 2�i���F011001
-#define BIT_011010 (0x001A) //!< 2�i���F011010
-#define BIT_011011 (0x001B) //!< 2�i���F011011
-#define BIT_011100 (0x001C) //!< 2�i���F011100
-#define BIT_011101 (0x001D) //!< 2�i���F011101
-#define BIT_011110 (0x001E) //!< 2�i���F011110
-#define BIT_011111 (0x001F) //!< 2�i���F011111
-#define BIT_100000 (0x0020) //!< 2�i���F100000
-#define BIT_100001 (0x0021) //!< 2�i���F100001
-#define BIT_100010 (0x0022) //!< 2�i���F100010
-#define BIT_100011 (0x0023) //!< 2�i���F100011
-#define BIT_100100 (0x0024) //!< 2�i���F100100
-#define BIT_100101 (0x0025) //!< 2�i���F100101
-#define BIT_100110 (0x0026) //!< 2�i���F100110
-#define BIT_100111 (0x0027) //!< 2�i���F100111
-#define BIT_101000 (0x0028) //!< 2�i���F101000
-#define BIT_101001 (0x0029) //!< 2�i���F101001
-#define BIT_101010 (0x002A) //!< 2�i���F101010
-#define BIT_101011 (0x002B) //!< 2�i���F101011
-#define BIT_101100 (0x002C) //!< 2�i���F101100
-#define BIT_101101 (0x002D) //!< 2�i���F101101
-#define BIT_101110 (0x002E) //!< 2�i���F101110
-#define BIT_101111 (0x002F) //!< 2�i���F101111
-#define BIT_110000 (0x0030) //!< 2�i���F110000
-#define BIT_110001 (0x0031) //!< 2�i���F110001
-#define BIT_110010 (0x0032) //!< 2�i���F110010
-#define BIT_110011 (0x0033) //!< 2�i���F110011
-#define BIT_110100 (0x0034) //!< 2�i���F110100
-#define BIT_110101 (0x0035) //!< 2�i���F110101
-#define BIT_110110 (0x0036) //!< 2�i���F110110
-#define BIT_110111 (0x0037) //!< 2�i���F110111
-#define BIT_111000 (0x0038) //!< 2�i���F111000
-#define BIT_111001 (0x0039) //!< 2�i���F111001
-#define BIT_111010 (0x003A) //!< 2�i���F111010
-#define BIT_111011 (0x003B) //!< 2�i���F111011
-#define BIT_111100 (0x003C) //!< 2�i���F111100
-#define BIT_111101 (0x003D) //!< 2�i���F111101
-#define BIT_111110 (0x003E) //!< 2�i���F111110
-#define BIT_111111 (0x003F) //!< 2�i���F111111
+/* 赤外線センサの状態(BITパターン)のBITマスク */
+#define BIT_000000 (0x0000) //!< 2進数：000000
+#define BIT_000001 (0x0001) //!< 2進数：000001
+#define BIT_000010 (0x0002) //!< 2進数：000010
+#define BIT_000011 (0x0003) //!< 2進数：000011
+#define BIT_000100 (0x0004) //!< 2進数：000100
+#define BIT_000101 (0x0005) //!< 2進数：000101
+#define BIT_000110 (0x0006) //!< 2進数：000110
+#define BIT_000111 (0x0007) //!< 2進数：000111
+#define BIT_001000 (0x0008) //!< 2進数：001000
+#define BIT_001001 (0x0009) //!< 2進数：001001
+#define BIT_001010 (0x000A) //!< 2進数：001010
+#define BIT_001011 (0x000B) //!< 2進数：001011
+#define BIT_001100 (0x000C) //!< 2進数：001100
+#define BIT_001101 (0x000D) //!< 2進数：001101
+#define BIT_001110 (0x000E) //!< 2進数：001110
+#define BIT_001111 (0x000F) //!< 2進数：001111
+#define BIT_010000 (0x0010) //!< 2進数：010000
+#define BIT_010001 (0x0011) //!< 2進数：010001
+#define BIT_010010 (0x0012) //!< 2進数：010010
+#define BIT_010011 (0x0013) //!< 2進数：010011
+#define BIT_010100 (0x0014) //!< 2進数：010100
+#define BIT_010101 (0x0015) //!< 2進数：010101
+#define BIT_010110 (0x0016) //!< 2進数：010110
+#define BIT_010111 (0x0017) //!< 2進数：010111
+#define BIT_011000 (0x0018) //!< 2進数：011000
+#define BIT_011001 (0x0019) //!< 2進数：011001
+#define BIT_011010 (0x001A) //!< 2進数：011010
+#define BIT_011011 (0x001B) //!< 2進数：011011
+#define BIT_011100 (0x001C) //!< 2進数：011100
+#define BIT_011101 (0x001D) //!< 2進数：011101
+#define BIT_011110 (0x001E) //!< 2進数：011110
+#define BIT_011111 (0x001F) //!< 2進数：011111
+#define BIT_100000 (0x0020) //!< 2進数：100000
+#define BIT_100001 (0x0021) //!< 2進数：100001
+#define BIT_100010 (0x0022) //!< 2進数：100010
+#define BIT_100011 (0x0023) //!< 2進数：100011
+#define BIT_100100 (0x0024) //!< 2進数：100100
+#define BIT_100101 (0x0025) //!< 2進数：100101
+#define BIT_100110 (0x0026) //!< 2進数：100110
+#define BIT_100111 (0x0027) //!< 2進数：100111
+#define BIT_101000 (0x0028) //!< 2進数：101000
+#define BIT_101001 (0x0029) //!< 2進数：101001
+#define BIT_101010 (0x002A) //!< 2進数：101010
+#define BIT_101011 (0x002B) //!< 2進数：101011
+#define BIT_101100 (0x002C) //!< 2進数：101100
+#define BIT_101101 (0x002D) //!< 2進数：101101
+#define BIT_101110 (0x002E) //!< 2進数：101110
+#define BIT_101111 (0x002F) //!< 2進数：101111
+#define BIT_110000 (0x0030) //!< 2進数：110000
+#define BIT_110001 (0x0031) //!< 2進数：110001
+#define BIT_110010 (0x0032) //!< 2進数：110010
+#define BIT_110011 (0x0033) //!< 2進数：110011
+#define BIT_110100 (0x0034) //!< 2進数：110100
+#define BIT_110101 (0x0035) //!< 2進数：110101
+#define BIT_110110 (0x0036) //!< 2進数：110110
+#define BIT_110111 (0x0037) //!< 2進数：110111
+#define BIT_111000 (0x0038) //!< 2進数：111000
+#define BIT_111001 (0x0039) //!< 2進数：111001
+#define BIT_111010 (0x003A) //!< 2進数：111010
+#define BIT_111011 (0x003B) //!< 2進数：111011
+#define BIT_111100 (0x003C) //!< 2進数：111100
+#define BIT_111101 (0x003D) //!< 2進数：111101
+#define BIT_111110 (0x003E) //!< 2進数：111110
+#define BIT_111111 (0x003F) //!< 2進数：111111
 
-/* �ԊO���Z���T�̏��(BIT�p�^�[��)�̃t���O */
-#define BIT_GOAL_JUDGE_ON		BIT_000001	 //!< 2�i���F000001
-#define BIT_RIGHT_OUTSIDE_ON	BIT_000010	 //!< 2�i���F000010
-#define BIT_RIGHT_INSIDE_ON		BIT_000100	 //!< 2�i���F000100
-#define BIT_CENTER_ON			BIT_001000	 //!< 2�i���F001000
-#define BIT_LEFT_INSIDE_ON		BIT_010000	 //!< 2�i���F010000
-#define BIT_LEFT_OUTSIDE_ON		BIT_100000	 //!< 2�i���F100000
+/* 赤外線センサの状態(BITパターン)のフラグ */
+#define BIT_GOAL_JUDGE_ON		BIT_000001	 //!< 2進数：000001
+#define BIT_RIGHT_OUTSIDE_ON	BIT_000010	 //!< 2進数：000010
+#define BIT_RIGHT_INSIDE_ON		BIT_000100	 //!< 2進数：000100
+#define BIT_CENTER_ON			BIT_001000	 //!< 2進数：001000
+#define BIT_LEFT_INSIDE_ON		BIT_010000	 //!< 2進数：010000
+#define BIT_LEFT_OUTSIDE_ON		BIT_100000	 //!< 2進数：100000
 
 //#define COMPARE_VALUE 450//450
 #define COMPARE_VALUE 300//450
 
-// �S�[���Z���T�̌��m�ő吔
+// ゴールセンサの検知最大数
 #define GOAL_DETECTED_MAX_COUNT 10
 
-/** ���O�o�͂�ݒ�(��`�l���L���ȏꍇ�A���O���o�͂���) */
-#define LOG_FATAL_ON	//<! �v���I�ȃG���[���O�̏o�͐ݒ�	�F�펞ON
-#define LOG_ERROR_ON	//<! �G���[���O�̏o�͐ݒ�			�F�펞ON
-#define LOG_WARN_ON		//<! �x���̏o�͐ݒ�					�F�펞ON
-#define LOG_INFO_ON		//<! ��񃍃O�̏o�͐ݒ�				�F�펞ON
-#define LOG_DEBUG_ON	//<! �f�o�b�O���O�̏o�͐ݒ�			�F�펞OFF
+/** ログ出力を設定(定義値が有効な場合、ログを出力する) */
+#define LOG_FATAL_ON	//<! 致命的なエラーログの出力設定	：常時ON
+#define LOG_ERROR_ON	//<! エラーログの出力設定			：常時ON
+#define LOG_WARN_ON		//<! 警告の出力設定					：常時ON
+#define LOG_INFO_ON		//<! 情報ログの出力設定				：常時ON
+#define LOG_DEBUG_ON	//<! デバッグログの出力設定			：常時OFF
 
 #if defined(LOG_FATAL_ON)
-#define LOG_FATAL(...)	{printf("[FATAL] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< �v���I�ȃG���[���O�o��
+#define LOG_FATAL(...)	{printf("[FATAL] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< 致命的なエラーログ出力
 #else
-#define LOG_FATAL(...)	//!< �v���I�ȃG���[���O�o��
+#define LOG_FATAL(...)	//!< 致命的なエラーログ出力
 #endif
 
 #if defined(LOG_ERROR_ON)
-#define LOG_ERROR(...)	{printf("[ERROR] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< �G���[���O�o��
+#define LOG_ERROR(...)	{printf("[ERROR] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< エラーログ出力
 #else
-#define LOG_ERROR(...)	//!< �G���[���O�o��
+#define LOG_ERROR(...)	//!< エラーログ出力
 #endif
 
 #if defined(LOG_WARN_ON)
-#define LOG_WARN(cdbg, ...)	{printf("[WARN ] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< �x�����O�o��
+#define LOG_WARN(cdbg, ...)	{printf("[WARN ] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< 警告ログ出力
 #else
-#define LOG_WARN(...)	//!< �x�����O�o��
+#define LOG_WARN(...)	//!< 警告ログ出力
 #endif
 
 #if defined(LOG_INFO_ON)
-#define LOG_INFO(...)	{printf("[INFO ] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< ��񃍃O�o��
+#define LOG_INFO(...)	{printf("[INFO ] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< 情報ログ出力
 #else
-#define LOG_INFO(...)	//!< ��񃍃O�o��
+#define LOG_INFO(...)	//!< 情報ログ出力
 #endif
 
 #if defined(LOG_DEBUG_ON)
-#define LOG_DEBUG(...)  {printf("[DEBUG] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< �f�o�b�O���O�o��
+#define LOG_DEBUG(...)  {printf("[DEBUG] "); printf("[%s]", __func__); printf(__VA_ARGS__);}	//!< デバッグログ出力
 #else
-#define LOG_DEBUG(...)	//!< �f�o�b�O���O�o��
+#define LOG_DEBUG(...)	//!< デバッグログ出力
 #endif
 
 #define RIGHT_MOTOR         30      // Right Motor address
@@ -219,6 +221,7 @@ int GetCurrentSpeed(int id);
 
 void ReadIRSensors(unsigned int * sensors);
 unsigned int ReadIRSensor(unsigned int ch);
+void delay_time(int sec);
 
 // ------------------ Global Variables Definition ------------------
 
@@ -243,10 +246,10 @@ float iGain =  0.2;  //Integral Gain
 float dGain =  120;  //Differential Gain
 int delay = 10;
 
-int PID_ctlr = 0;	//!< PID����p�ϐ��B���S�̃Z���T����̋�������͂��邱�ƂŁA���i���̃u����}�����鐧����s���B
+int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を入力することで、直進時のブレを抑制する制御を行う。
 
 
-// IR�̏��(BIT�p�^�[��)
+// IRの状態(BITパターン)
 int IR_BitPattern = 0;
 
 // Speed settings
@@ -255,13 +258,13 @@ float LowRate = 0.75;
 float HighRate = 0.5;
 
 
-int mMoveCount = 0;
+static int mMoveCount = 1;
 
 static int irIndex = 0;
 
 // ------------------ Trace action table ------------------
 int traceActionTable[32][7] = {
-//						�O�񓮍�	
+//						前回動作	
 // Sensor Pattern		TRACE_STRAIGHT		TRACE_L_STRAIGHT	TRACE_L_ROUND		TRACE_R_STRAIGHT	TRACE_R_ROUND		TRACE_L_TURN		TRACE_R_TURN
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 /* 00:BIT_00000x */		TRACE_STRAIGHT,		TRACE_L_STRAIGHT,	TRACE_L_ROUND,		TRACE_R_STRAIGHT,	TRACE_R_ROUND,		TRACE_L_TURN,		TRACE_R_TURN,
@@ -319,21 +322,21 @@ void LED_off(int i);
 void wait(int sec);
 
 /**
-* �G���g���[�|�C���g
-* @brief �G���g���[�|�C���g
-* @return 0�F���C�������̌p��
-* @return 1�F���C�������̏I��
+* エントリーポイント
+* @brief エントリーポイント
+* @return 0：メイン処理の継続
+* @return 1：メイン処理の終了
 */
 int main(void) {
     
-	// ���{����J�n
+	// ロボ動作開始
 
-    // �V���[�g�J�b�g���[�h�����ꍇ�͂����ɓ����B
+    // ショートカットモードを作る場合はここに入れる。
     
-	// �g���[�X����J�n
+	// トレース動作開始
 	executeTraceProcess();
 
-    // �S�[�������̓��������������J�n�H
+    // ゴール判定後の動作実質ここから開始？
 	executeFinalAction();
 }
 
@@ -352,6 +355,8 @@ char *getActionChar(int actionType) {
 		strcpy(retChar, "TRACE_R_ROUND\0");
 	} else if (actionType == TRACE_L_TURN) {
 		strcpy(retChar, "TRACE_L_TURN\0");
+	} else if (actionType == TRACE_R_TURN) {
+		strcpy(retChar, "TRACE_R_TURN\0");
 	} else if (actionType == TRACE_FINALACTION) {
 		strcpy(retChar, "TRACE_FINALACTION\0");
 	}
@@ -361,46 +366,72 @@ char *getActionChar(int actionType) {
 }
 
 /**
-* ���C���g���[�X����
-* @brief ���C���g���[�X����
-* @return �Ȃ�
-* @detail �S�[����������𖞂����܂Ń��C���g���[�X������s���B
+* ライントレース動作
+* @brief ライントレース動作
+* @return なし
+* @detail ゴール判定条件を満たすまでライントレース動作を行う。
 */
 void executeTraceProcess(void) {
 	static int previousTraceAction = TRACE_STRAIGHT;
 	int currentTraceAction = TRACE_STRAIGHT;
 	int sensorPattern = BIT_000000;
+	int waitMaxCount = 1;
 	
 	while (1) {
 
 		if (irIndex > 1000) {
 			return;
 		}
-		// �Z���T�l�̃r�b�g�p�^�[�����擾����B
+		// センサ値のビットパターンを取得する。
 		sensorPattern = getSensorPattern();
 
-/* �b��R�����g�A�E�g		
-		// �Z���T�l�̃p�^�[�����ŏI����ł���΃��[�v�𔲂���B
+/* 暫定コメントアウト		
+		// センサ値のパターンが最終動作であればループを抜ける。
 		if (sensorPattern == TRACE_FINALACTION) {
 			break;
 		}
 */
 
-		// �O��̓���ƃZ���T�l�̃p�^�[���̑g�ݍ��킹���獡��̓�������肷��B
+		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を決定する。
 		currentTraceAction = traceActionTable[(sensorPattern / 2)][previousTraceAction];
 		LOG_INFO("(sensorPattern / 2) %3d\n", (sensorPattern / 2));
-		char *previousTraceActionChar = getActionChar(previousTraceAction);
-		char *currentTraceActionChar = getActionChar(previousTraceAction);
+		char *previousTraceActionChar = getActionChar(previousTraceAction);//判定結果からログ用文字列を取得
+		char *currentTraceActionChar = getActionChar(currentTraceAction);//判定結果からログ用文字列を取得
 		LOG_INFO("previousTraceAction [%20s]: sensorPattern [%3d]: currentTraceAction: [%20s]\n",
 			previousTraceActionChar, sensorPattern, currentTraceActionChar);
 		if(currentTraceAction != previousTraceAction)
 		{
 			Execute(currentTraceAction);
+		
+/* お試し miyano ここから */
+			//ステータスの変化間隔が短い場合、delayを大きくして曲げを大きくする
+			//delayの最大値は走行させて検証必要！！！
+			waitMaxCount = DELAY_MAX_TIME/mMoveCount;
+			if (waitMaxCount == 0) {
+				waitMaxCount = 1;
+			}
+
+			//_delay_ms(1)を繰り返して、待ち時間を可変に確保する
+			int waitCount = 0;
+			while(1) {
+//				_delay_ms(1);// 1msのdelayTimeの間隔を空ける
+				waitCount++;
+				if (waitCount >= waitMaxCount) {
+					//カウント数に達したら_delay_ms(1)を止める。
+					LOG_INFO("waitCount=[%d]\n", waitCount);
+					break;
+				}
+			}
+			
+			mMoveCount = 1;
+		} else {
+			//ステータスが変化するまでの回数をカウント
+			mMoveCount++;
 		}
+/* お試し miyano ここまで */
+//		delay_time(1000);	// 10ms 間隔を空ける
 		
-//		delay_time(1000);	// 10ms �Ԋu���󂯂�
-		
-		// ����̓����O��̓���ɑޔ�����B
+		// 今回の動作を前回の動作に退避する。
 		previousTraceAction = currentTraceAction;
 
 		irIndex++;
@@ -408,26 +439,26 @@ void executeTraceProcess(void) {
 }
 
 /**
-* �Z���T�[�l��Bit�p�^�[�����擾����B
-* @brief �Z���T�[�l���Q�Ƃ��A�Ή�����A�N�V�������擾����B
-* @return �߂�l�̐���
+* センサー値のBitパターンを取得する。
+* @brief センサー値を参照し、対応するアクションを取得する。
+* @return 戻り値の説明
 */
 int getSensorPattern(void) {
     LOG_INFO("\n======start===========\n");
 
 	int ptn = 0;
 	
-	// LED��ݒ�
+	// LEDを設定
 //	setLED();
 	
-	// �Z���T�[�l���擾
+	// センサー値を取得
 	getSensors();
 	
-	// ��������������炷���߃S�[������p�Z���T�l���t�B���^�����O����B
+	// 判定条件数を減らすためゴール判定用センサ値をフィルタリングする。
 	ptn = ((IR_BitPattern >> 1) << 1);
 
-/* �b��R�����g�A�E�g	
- 	// �S�[������i�S�[���p�Z���T��A���ŋK�萔�񌟒m�����ꍇ�ɐݒ�j
+/* 暫定コメントアウト	
+ 	// ゴール判定（ゴール用センサを連続で規定数回検知した場合に設定）
 	if ((IR_BitPattern & BIT_GOAL_JUDGE_ON) == BIT_GOAL_JUDGE_ON) {
 		goalCounter++;
 		if (goalCounter >= GOAL_DETECTED_MAX_COUNT) {
@@ -443,16 +474,16 @@ int getSensorPattern(void) {
 
 
 /**
- * �Z���T�[�l���擾
- * @brief �Z���T�[�l���擾
- * @return �Ȃ�
- * @detail �Z���T�[�l���擾���AIR[]�����IR_BitPattern���X�V����B
+ * センサー値を取得
+ * @brief センサー値を取得
+ * @return なし
+ * @detail センサー値を取得し、IR[]およびIR_BitPatternを更新する。
  */
 void getSensors(void) {
-	/* �Z���T�[�l���擾 */
+	/* センサー値を取得 */
     ReadIRSensors(IR);
 	
-	/* IR��Ԃ�BIT�p�^�[���ɕϊ� */
+	/* IR状態をBITパターンに変換 */
 	IR_BitPattern = 0;
 	if ( IR[GOAL_JUDGE]		>= COMPARE_VALUE )	IR_BitPattern |= BIT_GOAL_JUDGE_ON;
 	if ( IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_OUTSIDE_ON;
@@ -701,7 +732,7 @@ void RightTurnMove(void) {
 	Move(leftSpeed, rightSpeed);
 }
 
-delay_time(int sec) {
+void delay_time(int sec) {
 	Sleep(sec);
 }
 
