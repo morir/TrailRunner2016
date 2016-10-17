@@ -45,6 +45,10 @@
 
 #define COVER_MOTOR			18		// Cover Motor address
 
+// MX-12W Control Table Address
+#define CTRL_TBL_ADDR_PRESENT_SPEED_L	(38)	// Lowest byte of Current Speed 
+#define CTRL_TBL_ADDR_PRESENT_SPEED_H	(39)	// Highest byte of Current Speed
+
 // Motor Speed Value
 #ifdef DINAMIXEL_AX_12
 #define P_CW_SPEED_NOMAL    1023
@@ -126,6 +130,22 @@
 #define TRACE_R_TURN_END	11	// 右旋回終了
 #define TRACE_FINALACTION	999	// ゴール動作
 
+// Adjust Speed
+#define KP				(0.025)	//!< P制御の係数
+#define SPEED_CCW_MIN	(0)		//!< CCW方向のモータ速度の最小値
+#define SPEED_CCW_MAX	(1023)	//!< CCW方向のモータ速度の最大値
+#define SPEED_CW_MIN	(1024)	//!< CW方向のモータ速度の最小値
+#define SPEED_CW_MAX	(2047)	//!< CW方向のモータ速度の最大値
+/**
+ * @enum E_DIFF
+ * 速度偏差の種別
+ */
+enum E_DIFF {
+	DIFF_PREVIOUS = 0,	//!< 前回値
+	DIFF_CURRENT,		//!< 現在値
+	DIFF_MAX
+};
+
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
@@ -154,7 +174,11 @@ void PrintErrorCode(void);
 void PrintCommStatus(int CommStatus);
 
 void AdjustSpeed(int targetSpeedL, int targetSpeedR);
-int GetCurrentSpeed(int id);
+void AdjustSpeedR(int expectedSpeed);
+void AdjustSpeedL(int expectedSpeed);
+int LimitAdjustedSpeed(int adjustedSpeed, int expectedSpeed);
+int GetCurrentSpeedR(void);
+int GetCurrentSpeedL(void);
 
 int mCount;
 

@@ -318,72 +318,202 @@ void PrintCommStatus(int CommStatus) {
     }
 }
 
+/**
+ * モータの速度を調整する。
+ * @brief モータの速度を調整する。
+ * @param (int expectedSpeedR) 右モータの速度(期待値)
+ * @param (int expectedSpeedL) 左モータの速度(期待値)
+ * @return なし
+ */
 void AdjustSpeed(int expectedR, int expectedL) {
-	// 9/20 TODO:
-	// 取得値が目標値より高い値は読み飛ばす。
-	// 目標値の判断はセンサ値で。
-	// 設定値はセンサ値に負荷分で遅くなってしまう速度分を加味する。
-
-	// RIGHT_MOTOR
-	//   Forward：0 - 1023  Backward：1024 - 2047
-	int realR = GetCurrentSpeed(RIGHT_MOTOR);
-	int diffR = (expectedR - realR);
-	int adjustedR = (expectedR + diffR);
-	
-	// Range check
-	if (expectedR < 1024) {
-		if (adjustedR < 0) {
-			adjustedR = 0;
-		}
-		else if (adjustedR > 1023) {
-			adjustedR = 1023;
-		}	
-	}
-	else {
-		if (adjustedR < 1024) {
-			adjustedR = 1024;
-		}
-		else if (adjustedR > 2047) {
-			adjustedR = 2047;
-		}
-	}
-
-	// LEFT_MOTOR
-	//   Forward：1024 - 2047  Backward：0 - 1023
-	int realL = GetCurrentSpeed(LEFT_MOTOR);
-	int diffL = (expectedL - realL);
-	int adjustedL = (expectedL + diffL);
-	
-	// Range check
-	if (expectedR > 1023) {
-		if (adjustedL < 1024) {
-			adjustedL = 1024;
-		}
-		else if (adjustedL > 2047) {
-			adjustedL = 2047;
-		}
-	}
-	else {
-		if (adjustedL < 0) {
-			adjustedL = 0;
-		}
-		else if (adjustedL > 1023) {
-			adjustedL = 1023;
-		}
-	}
-	
-	MotorControl(RIGHT_MOTOR, adjustedR);
-	MotorControl(LEFT_MOTOR,  adjustedL);
+	AdjustSpeedR(expectedR);
+	AdjustSpeedL(expectedL);
 }
 
-int GetCurrentSpeed(int id) {
-	int readValueHigh = 0;
-	int readValueLow = 0;
-	int speed = 0;
+/**
+ * 右モータの速度を調整する。
+ * @brief 右モータの速度を調整する。
+ * @param (int expectedSpeed) 速度(期待値)
+ * @return なし
+ */
+void AdjustSpeedR(int expectedSpeed) {
+	static int speedDiff[DIFF_MAX] = {0};	// 速度(偏差値)
+	int adjustedSpeed = 0;					// 速度(調整値)
+	int currentSpeed = GetCurrentSpeedR();	// 速度(現在地)
 	
-	readValueHigh = dxl_read_byte(id, 39) & 0x3;
-	readValueLow  = dxl_read_byte(id, 38) & 0xF0;
+	/* 停止中の場合、偏差の取得が正常に行えるように、
+	 * 速度(期待値)の回転方向(CCW/CW)に応じて現在の速度を修正する。
+	 */
+	if(currentSpeed == SPEED_CCW_MIN || currentSpeed == SPEED_CW_MIN) {
+		// 停止中の場合
+		if(expectedSpeed <= SPEED_CCW_MAX) {
+			// 速度(期待値)の回転方向がCCWの場合
+			currentSpeed = SPEED_CCW_MIN;
+		}
+		else {
+			// 速度(期待値)の回転方向がCWの場合
+			currentSpeed = SPEED_CW_MIN;
+		}
+	}
+	
+	// 速度の偏差（前回値）を更新
+	speedDiff[DIFF_PREVIOUS] = speedDiff[DIFF_CURRENT];
+	
+	// 偏差を取得
+	speedDiff[DIFF_CURRENT] = currentSpeed - expectedSpeed;
+	
+	// 調整値を計算
+	adjustedSpeed = expectedSpeed + (speedDiff[DIFF_CURRENT] + speedDiff[DIFF_PREVIOUS]) * KP;
+	
+	// 調整値の最小・最大を制限
+	adjustedSpeed = LimitAdjustedSpeed(adjustedSpeed, expectedSpeed);
+	LOG_DEBUG("AdjustSpeedR() : adjustedSpeed=%d\n",adjustedSpeed);
+
+	// モーターに速度を設定
+	MotorControl(RIGHT_MOTOR, adjustedSpeed);
+}
+
+/**
+ * 左モータの速度を調整する。
+ * @brief 左モータの速度を調整する。
+ * @param (int expectedSpeed) 速度(期待値)
+ * @return なし
+ */
+void AdjustSpeedL(int expectedSpeed) {
+	static int speedDiff[DIFF_MAX] = {0};	// 速度(偏差値)
+	int adjustedSpeed = 0;					// 速度(調整値)
+	int currentSpeed = GetCurrentSpeedL();	// 速度(現在地)
+	
+	/* 停止中の場合、偏差の取得が正常に行えるように、
+	 * 速度(期待値)の回転方向(CCW/CW)に応じて現在の速度を修正する。
+	 */
+	if(currentSpeed == SPEED_CCW_MIN || currentSpeed == SPEED_CW_MIN) {
+		// 停止中の場合
+		if(expectedSpeed <= SPEED_CCW_MAX) {
+			// 速度(期待値)の回転方向がCCWの場合
+			currentSpeed = SPEED_CCW_MIN;
+		}
+		else {
+			// 速度(期待値)の回転方向がCWの場合
+			currentSpeed = SPEED_CW_MIN;
+		}
+	}
+	
+	// 速度の偏差（前回値）を更新
+	speedDiff[DIFF_PREVIOUS] = speedDiff[DIFF_CURRENT];
+	
+	// 偏差を取得
+	speedDiff[DIFF_CURRENT] = currentSpeed - expectedSpeed;
+	
+	// 調整値を計算
+	adjustedSpeed = expectedSpeed + (speedDiff[DIFF_CURRENT] + speedDiff[DIFF_PREVIOUS]) * KP;
+	
+	// 調整値の最小・最大を制限
+	adjustedSpeed = LimitAdjustedSpeed(adjustedSpeed, expectedSpeed);
+	LOG_DEBUG("AdjustSpeedL() : adjustedSpeed=%d\n",adjustedSpeed);
+
+	// モーターに速度を設定
+	MotorControl(LEFT_MOTOR, adjustedSpeed);
+}
+
+/**
+ * 速度(調整値)を下限値/上限値に丸める。
+ * @brief 速度(調整値)を下限値/上限値に丸める。
+ * @param (int adjustedSpeed) 速度(調整値)
+ * @param (int expectedSpeed) 速度(期待値)
+ * @return 下限値/上限値に丸めた速度(調整値)
+ */
+int LimitAdjustedSpeed(int adjustedSpeed, int expectedSpeed) {
+	int speed = adjustedSpeed;	// 速度(調整値)
+	
+	if(expectedSpeed <= SPEED_CCW_MAX) {
+		// 速度(期待値)の回転方向がCCW
+		if(speed < 0) {
+			// 速度(調整値)がCCWの下限値を下回る場合
+			speed = SPEED_CCW_MIN; 
+		}
+		else if(speed > SPEED_CCW_MAX) {
+			// 速度(調整値)がCCWの上限値を上回る場合
+			speed = SPEED_CCW_MAX;
+		}
+	}
+	else {
+		// 速度(期待値)の回転方向がCW
+		if(speed < SPEED_CW_MIN) {
+			// 速度(調整値)がCWの下限値を下回る場合
+			speed = SPEED_CW_MIN;
+		}
+		else if(speed > SPEED_CW_MAX) {
+			// 速度(調整値)がCWの上限値を上回る場合
+			speed = SPEED_CW_MAX;
+		}
+	}
+	
+	return speed;
+}
+
+/**
+ * 現在の速度(右モータ)取得。
+ * @brief 現在の速度(右モータ)取得。
+ * @return 現在の速度(右モータ)
+ * @detail 上位バイト3bit、下位8bitから現在の速度(右モータ)を取得する。
+ *         パケット通信失敗時、前回の速度を返す。
+ *         前進:1024～2047(CCW)
+ *         後進:0000～1023(CW)
+ */
+int GetCurrentSpeedR(void) {
+	int readValueHigh = 0;	// 上位バイト
+	int readValueLow = 0;	// 下位バイト
+	static int speed = 0;	// 現在の速度
+	
+	// 上位バイト取得
+	readValueHigh = dxl_read_byte(RIGHT_MOTOR, CTRL_TBL_ADDR_PRESENT_SPEED_H) & 0x07;
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return speed;
+	}
+	// 下位バイト取得
+	readValueLow  = dxl_read_byte(RIGHT_MOTOR, CTRL_TBL_ADDR_PRESENT_SPEED_L) & 0xFF;
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return speed;
+	}
+	// 上位バイトと下位バイトから現在の速度を計算
 	speed = ((readValueHigh << 8) + readValueLow);
-	LOG_INFO("Current speed is %d\n", speed);
+	LOG_DEBUG("GetCurrentSpeedR() is %d\n", speed);
+
+	return speed;
+}
+
+/**
+ * 現在の速度(左モータ)取得。
+ * @brief 現在の速度(左モータ)取得。
+ * @return 現在の速度(左モータ)
+ * @detail 上位バイト3bit、下位8bitから現在の速度(左モータ)を取得する。
+ *         パケット通信失敗時、前回の速度を返す。
+ *         前進:0000～1023(CW)
+ *         後進:1024～2047(CCW)
+ */
+int GetCurrentSpeedL(void) {
+	int readValueHigh = 0;	// 上位バイト
+	int readValueLow = 0;	// 下位バイト
+	static int speed = 0;	// 現在の速度
+	
+	// 上位バイト取得
+	readValueHigh = dxl_read_byte(LEFT_MOTOR, CTRL_TBL_ADDR_PRESENT_SPEED_H) & 0x07;
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return speed;
+	}
+	// 下位バイト取得
+	readValueLow  = dxl_read_byte(LEFT_MOTOR, CTRL_TBL_ADDR_PRESENT_SPEED_L) & 0xFF;
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return speed;
+	}
+	// 上位バイトと下位バイトから現在の速度を計算
+	speed = ((readValueHigh << 8) + readValueLow);
+	LOG_DEBUG("GetCurrentSpeedL() is %d\n", speed);
+
 	return speed;
 }
