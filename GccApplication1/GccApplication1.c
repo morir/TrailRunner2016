@@ -271,6 +271,61 @@ int getSensorPattern(void) {
 }
 
 /**
+ * センサー値を取得
+ * @brief センサー値を取得
+ * @return なし
+ * @detail センサー値を取得し、IR[]およびIR_BitPatternを更新する。
+ */
+void getSensors(void) {
+	/* センサー値を取得 */
+    ReadIRSensors(IR);
+	
+	/* IR状態をBITパターンに変換 */
+	IR_BitPattern = 0;
+	if ( IR[GOAL_JUDGE]		>= COMPARE_VALUE_GOAL )	IR_BitPattern |= BIT_GOAL_JUDGE_ON;
+	if ( IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_OUTSIDE_ON;
+	if ( IR[RIGHT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_INSIDE_ON;
+	if ( IR[CENTER]			>= COMPARE_VALUE )	IR_BitPattern |= BIT_CENTER_ON;
+	if ( IR[LEFT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_LEFT_INSIDE_ON;
+	if ( IR[LEFT_OUTSIDE]	>= COMPARE_VALUE_OTHER )	IR_BitPattern |= BIT_LEFT_OUTSIDE_ON;
+
+    LOG_INFO("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
+	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
+	LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
+				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
+				((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
+	
+}
+
+/**
+* ゴール到達時の処理
+* @brief ゴール到達時の処理
+* @return なし
+*/
+void executeFinalAction(void)
+{
+	LOG_INFO("executeFinalAction!!\r\n");
+
+	MotorControl( RIGHT_MOTOR, 300 );
+	MotorControl( LEFT_MOTOR, 300 );
+	_delay_ms(900);
+	Execute(MOVE_SELECTION_TYPE_STOP);
+	_delay_ms(100);
+	MotorControl( COVER_MOTOR, 300 );
+	_delay_ms(1500);
+	MotorControl( COVER_MOTOR, 0 );
+	_delay_ms(100);
+	MotorControl( RIGHT_MOTOR, 1623 );
+	MotorControl( LEFT_MOTOR, 600 );
+	_delay_ms(500);
+	Execute(MOVE_SELECTION_TYPE_STOP);
+}
+
+/**
 * センサー値から次の行動パターンを決定
 * @brief センサー値から次の行動パターンを決定
 * @return メインプログラムのステータス
@@ -428,37 +483,6 @@ int decideMoveAction(void) {
 }
 
 /**
- * センサー値を取得
- * @brief センサー値を取得
- * @return なし
- * @detail センサー値を取得し、IR[]およびIR_BitPatternを更新する。
- */
-void getSensors(void) {
-	/* センサー値を取得 */
-    ReadIRSensors(IR);
-	
-	/* IR状態をBITパターンに変換 */
-	IR_BitPattern = 0;
-	if ( IR[GOAL_JUDGE]		>= COMPARE_VALUE_GOAL )	IR_BitPattern |= BIT_GOAL_JUDGE_ON;
-	if ( IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_OUTSIDE_ON;
-	if ( IR[RIGHT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_RIGHT_INSIDE_ON;
-	if ( IR[CENTER]			>= COMPARE_VALUE )	IR_BitPattern |= BIT_CENTER_ON;
-	if ( IR[LEFT_INSIDE]	>= COMPARE_VALUE )	IR_BitPattern |= BIT_LEFT_INSIDE_ON;
-	if ( IR[LEFT_OUTSIDE]	>= COMPARE_VALUE_OTHER )	IR_BitPattern |= BIT_LEFT_OUTSIDE_ON;
-
-    LOG_INFO("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
-	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
-	LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
-				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
-				((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
-	
-}
-
-/**
  * アクションを更新
  * @brief アクションを更新
  * @param (int currentAction) 現在のアクション
@@ -587,29 +611,6 @@ int getAction(void) {
     return ret;
 }
 
-/**
-* ゴール到達時の処理
-* @brief ゴール到達時の処理
-* @return なし
-*/
-void executeFinalAction(void)
-{
-	LOG_INFO("executeFinalAction!!\r\n");
-
-	MotorControl( RIGHT_MOTOR, 300 );
-	MotorControl( LEFT_MOTOR, 300 );
-	_delay_ms(900);
-	Execute(MOVE_SELECTION_TYPE_STOP);
-	_delay_ms(100);
-	MotorControl( COVER_MOTOR, 300 );
-	_delay_ms(1500);
-	MotorControl( COVER_MOTOR, 0 );
-	_delay_ms(100);
-    MotorControl( RIGHT_MOTOR, 1623 );
-    MotorControl( LEFT_MOTOR, 600 );
-	_delay_ms(500);
-	Execute(MOVE_SELECTION_TYPE_STOP);
-}
 
 void initEmergencyStop(void) {
     DDRD  = 0x70;
