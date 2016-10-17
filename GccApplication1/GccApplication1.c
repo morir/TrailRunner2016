@@ -23,6 +23,8 @@
 
 #define _LED_ON_
 
+#define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
+
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
 int getSensorPattern(void);
@@ -62,7 +64,7 @@ unsigned int IR[ADC_PORT_6 + 1] = {0,0,0,0,0,0,0};
 // IRの状態(BITパターン)
 int IR_BitPattern = 0;
 
-int mMoveCount = 0;
+int mMoveCount = 1;
 
 
 // PID Param
@@ -189,6 +191,7 @@ void executeTraceProcess(void) {
 	static int previousTraceAction = TRACE_STRAIGHT;
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
+	int waitMaxCount = 1;
 
 	//初期動作（少しだけ直進）
 	StraightMove();
@@ -224,10 +227,36 @@ void executeTraceProcess(void) {
 				_delay_ms(100);	// 100ms 逆回転を入力（強さと時間は調整必要）
 			}
 			Execute(currentTraceAction);
+/* お試し miyano ここから */
+/* 試して意味なしだったら削除します。
+			//ステータスの変化間隔が短い場合、delayを大きくして曲げを大きくする
+			//delayの最大値は走行させて検証必要！！！
+			waitMaxCount = DELAY_MAX_TIME/mMoveCount;
+			if (waitMaxCount == 0) {
+				waitMaxCount = 1;
+			}
+
+			//_delay_ms(1)を繰り返して、待ち時間を可変に確保する
+			int waitCount = 0;
+			while(1) {
+				_delay_ms(1);// 1msのdelayTimeの間隔を空ける
+				waitCount++;
+				if (waitCount >= waitMaxCount) {
+					//カウント数に達したら_delay_ms(1)を止める。
+					break;
+				}
+			}
+			
+			mMoveCount = 1;
+		} else {
+			//ステータスが変化するまでの回数をカウント
+			mMoveCount++;
+*/
+/* お試し miyano ここまで */
 		}
-		
-		_delay_ms(10);	// 10ms 間隔を空ける
-		
+
+		_delay_ms(5);// delayTimeの間隔を空ける
+
 		// 今回の動作を前回の動作に退避する。
 		previousTraceAction = currentTraceAction;
 	}
