@@ -1,0 +1,39 @@
+
+＜＜右旋回のステータス遷移＞＞
+
+■TRACE_R_TURN_STARTになるための条件
+　下記１．２．を同時に満たしていること
+ １．前回ステータスが、以下以外であること。
+	・TRACE_L_TURN
+	・TRACE_L_TURN_END
+	・TRACE_R_TURN
+	・TRACE_R_TURN_END
+ ２．センサー値が以下であること。
+	・BIT_00011x
+	・BIT_00111x
+	・BIT_01111x
+■TRACE_R_TURN_STARTを継続する条件
+ １．センサー値が以下であること。
+　　（旋回開始判定と同じ、もしくは旋回判定後に直進したときに当たりそうなもの）
+	・BIT_00001x
+	・BIT_00010x
+	・BIT_00011x
+	・BIT_00100x
+	・BIT_00110x
+	・BIT_00111x
+	・BIT_01100x
+	・BIT_01000x
+	・BIT_01111x
+■TRACE_R_TURN_STARTから、TRACE_R_TURNに遷移する条件
+ １．センサー値が以下であること。
+	・BIT_00000x
+■TRACE_R_TURNから、TRACE_R_TURN_ENDに遷移する条件
+ １．センサー値が以下であること。
+	・BIT_00001x（これを遷移条件にしたいけど、これを入れて良いかは、実機動作での確認必要）
+	・BIT_00010x（これでTRACE_R_TURN_ENDしても、前進しはじめる頃にはセンサー位置は、BIT_01000xになっていると思う）
+	・BIT_00100x（これでTRACE_R_TURN_ENDしても、前進しはじめる頃にはセンサー位置は、BIT_10000xになっていると思う）
+	・BIT_01000x（これでTRACE_R_TURN_ENDした場合、TRACE_L_TURN_STARTにすべきと思う）
+
+
+
+
