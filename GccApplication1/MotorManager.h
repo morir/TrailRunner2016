@@ -122,12 +122,12 @@
 #define TRACE_L_ROUND		2	// 左カーブ
 #define TRACE_L_TURN_START	7	// 左旋回開始
 #define TRACE_L_TURN		5	// 左旋回
-#define TRACE_L_TURN_END	9	// 左旋回終了
+#define TRACE_L_TURN_END	8	// 左旋回終了
 #define TRACE_R_STRAIGHT	3	// 右前進
 #define TRACE_R_ROUND		4	// 右カーブ
-#define TRACE_R_TURN_START	10	// 右旋回開始
+#define TRACE_R_TURN_START	9	// 右旋回開始
 #define TRACE_R_TURN		6	// 右旋回
-#define TRACE_R_TURN_END	11	// 右旋回終了
+#define TRACE_R_TURN_END	10	// 右旋回終了
 #define TRACE_FINALACTION	999	// ゴール動作
 
 // Adjust Speed
