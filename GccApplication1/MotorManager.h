@@ -173,7 +173,7 @@ void RightTurnMove(void);
 void PrintErrorCode(void);
 void PrintCommStatus(int CommStatus);
 
-void AdjustSpeed(int targetSpeedL, int targetSpeedR);
+void AdjustSpeed(int targetSpeedR, int targetSpeedL);
 void AdjustSpeedR(int expectedSpeed);
 void AdjustSpeedL(int expectedSpeed);
 int LimitAdjustedSpeed(int adjustedSpeed, int expectedSpeed);
