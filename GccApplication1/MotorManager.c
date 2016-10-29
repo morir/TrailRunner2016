@@ -13,7 +13,7 @@
 //#define _MOTOR_OFF_
 
 // Speed settings
-int BaseSpeed = 400;
+int BaseSpeed = 200;
 float LowRate = 0.90;
 float HighRate = 0.80;
 
@@ -249,15 +249,17 @@ void RightRoundMove(void) {
 }
 
 void LeftTurnMove(void) {
-	int leftSpeed = (1024 + BaseSpeed);
-	int rightSpeed = (1024 + BaseSpeed);
+	int speed = (BaseSpeed /2);
+	int leftSpeed = (1024 + speed * 0.8);
+	int rightSpeed = (1024 + speed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightTurnMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = BaseSpeed;
+	int speed = (BaseSpeed /2);
+	int leftSpeed = speed;
+	int rightSpeed = speed * 0.8;
 
 	Move(leftSpeed, rightSpeed);
 }
