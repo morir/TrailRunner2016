@@ -51,6 +51,25 @@ void MotorControl(int id, int power) {
 #endif // _MOTOR_OFF_
 }
 
+/************************************************************************/
+// 関節用モーター実行関数
+// id モーターID
+// speed 速度
+// position 位置（0～1023、512はセンター）
+/************************************************************************/
+void MotorControlJoint(int id, int speed, int position) {
+	#ifndef _MOTOR_OFF_
+	int CommStatus = COMM_RXSUCCESS;
+	dxl_write_word( id, P_GOAL_POSITION_L, position );
+	dxl_write_word( id, P_GOAL_SPEED_L, speed );
+	CommStatus = dxl_get_result();
+	if( CommStatus == COMM_RXSUCCESS )
+	PrintErrorCode();
+	else
+	PrintCommStatus(CommStatus);
+	#endif // _MOTOR_OFF_
+}
+
 void Execute(int type) {
 	//type = 0;//DBG
     switch (type) {

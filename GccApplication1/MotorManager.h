@@ -27,6 +27,8 @@
 #define P_CW_ANGLE_LIMIT_H  7
 #define P_CCW_ANGLE_LIMIT_L 8
 #define P_CCW_ANGLE_LIMIT_H 9
+#define P_GOAL_POSITION_L   30
+#define P_GOAL_POSITION_H   31
 #define P_GOAL_SPEED_L      32
 #define P_GOAL_SPEED_H      33
 #define P_EEP_LOCK          47
@@ -43,7 +45,7 @@
 #define OVER_RUN_TIME       500     // Over run time
 #endif // DINAMIXEL_AX_12
 
-#define COVER_MOTOR			18		// Cover Motor address
+#define PETBOTTOLE_MOTOR	18		// Cover Motor address
 
 // MX-12W Control Table Address
 #define CTRL_TBL_ADDR_PRESENT_SPEED_L	(38)	// Lowest byte of Current Speed 
@@ -133,6 +135,7 @@
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
+void MotorControlJoint(int id, int speed, int position);
 void Execute(int type);
 void setParamMoveAction(int right, int left);
 void StopMove(void);

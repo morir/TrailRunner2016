@@ -28,6 +28,8 @@
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
 int getSensorPattern(void);
+void initPETbottlesMotor(void);
+void placePETbottles(void);
 
 int decideMoveAction(void);
 int getAction(void);
@@ -348,7 +350,8 @@ int main(void) {
     initIRSensor();
     MotorInit();
     initSerial();
-    
+	initPETbottlesMotor();
+
 	// ロボ動作開始
 
     // ショートカットモードを作る場合はここに入れる。
@@ -539,14 +542,35 @@ void executeFinalAction(void)
 	_delay_ms(900);
 	Execute(MOVE_SELECTION_TYPE_STOP);
 	_delay_ms(100);
-	MotorControl( COVER_MOTOR, 300 );
-	_delay_ms(1500);
-	MotorControl( COVER_MOTOR, 0 );
-	_delay_ms(100);
+
+	//ペットボトル設置を実行
+	placePETbottles();
+
 	MotorControl( RIGHT_MOTOR, 1623 );
 	MotorControl( LEFT_MOTOR, 600 );
 	_delay_ms(500);
 	Execute(MOVE_SELECTION_TYPE_STOP);
+}
+
+/************************************************************************/
+// ペットボトル用モータの初期設定
+// ペットボトル設置用モーターを少し前方に傾ける。
+/************************************************************************/
+void initPETbottlesMotor(void) {
+	//最大速度で、642の位置へ動かす
+	MotorControlJoint( PETBOTTOLE_MOTOR, 0, 642 );
+}
+
+/************************************************************************/
+// ペットボトル設置
+/************************************************************************/
+void placePETbottles(void) {
+	_delay_ms(1000);//1秒待つ⇒動作に合わせて変更してください
+	MotorControlJoint( PETBOTTOLE_MOTOR, 30, 352 );//モーターを後方にゆっくり傾ける
+	_delay_ms(6000);//6秒継続
+	MotorControlJoint( PETBOTTOLE_MOTOR, 100, 512 );//モーターをセンター位置に戻す
+	_delay_ms(3000);//3秒待つ⇒動作に合わせて変更してください
+
 }
 
 /**
