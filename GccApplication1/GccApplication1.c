@@ -408,6 +408,35 @@ void executeTraceProcess(void) {
 						break;
 					}
 				}
+
+				//旋回実行
+				LeftTurnMove();
+				while(1) {
+					sensorPattern = getSensorPattern();
+					//旋回動作を抜けるための条件を判定
+					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+						//中央のセンサーが黒なら停止を実行
+						StopMove();
+						while(1) {
+							judgeSpeed = GetCurrentSpeedR();
+							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+								//速度が30以下ならstop()抜ける
+								break;
+							}
+						}
+						//逆旋回を実行：センサーを中央に戻すため
+						RightTurnMove();
+						while(1) {
+							//逆旋回動作を抜けるための条件を判定
+							sensorPattern = getSensorPattern();
+							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+								StraightMove();
+								break;
+							}
+						}
+						break;
+					}
+				}
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
@@ -420,9 +449,40 @@ void executeTraceProcess(void) {
 						break;
 					}
 				}
+
+				//旋回実行
+				RightTurnMove();
+				while(1) {
+					sensorPattern = getSensorPattern();
+					//旋回動作を抜けるための条件を判定
+					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+						//中央のセンサーが黒なら停止を実行
+						StopMove();
+						while(1) {
+							judgeSpeed = GetCurrentSpeedR();
+							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+								//速度が30以下ならstop()抜ける
+								break;
+							}
+						}
+						//逆旋回を実行：センサーを中央に戻すため
+						RightTurnMove();
+						while(1) {
+							//逆旋回動作を抜けるための条件を判定
+							sensorPattern = getSensorPattern();
+							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+								StraightMove();
+								break;
+							}
+						}
+						break;
+					}
+				}
+
 			}
 
 			//左旋回中復帰時の動作
+/* 復帰動作は一旦コメントアウト。動作検証後、変更か削除します。
 			if (previousTraceAction == TRACE_L_TURN && currentTraceAction == TRACE_L_TURN_END) {
 				//RightTurnMove();//逆回転
 				StopMove();
@@ -437,6 +497,7 @@ void executeTraceProcess(void) {
 				_delay_ms(1000);	// 100ms 逆回転を入力（強さと時間は調整必要）
 				currentTraceAction = TRACE_L_ROUND;
 			}
+*/
 			Execute(currentTraceAction);
 /* お試し miyano ここから */
 /* 試して意味なしだったら削除します。
