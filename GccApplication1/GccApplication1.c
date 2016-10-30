@@ -374,6 +374,7 @@ void executeTraceProcess(void) {
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
 	int waitMaxCount = 1;
+	int judgeSpeed = 0;
 
 	//初期動作（少しだけ直進）
 	StraightMove();
@@ -400,13 +401,25 @@ void executeTraceProcess(void) {
 			{
 				LED_on(1);
 				StopMove();
-				_delay_ms(1000);
+				while(1) {
+					judgeSpeed = GetCurrentSpeedR();
+					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+						//速度が30以下ならstop()抜ける
+						break;
+					}
+				}
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
 				LED_on(2);
 				StopMove();
-				_delay_ms(1000);
+				while(1) {
+					judgeSpeed = GetCurrentSpeedR();
+					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+						//速度が30以下ならstop()抜ける
+						break;
+					}
+				}
 			}
 
 			//左旋回中復帰時の動作
