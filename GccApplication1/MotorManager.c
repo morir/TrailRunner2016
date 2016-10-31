@@ -40,6 +40,8 @@ void MotorInit(void) {
     dxl_write_word( LEFT_MOTOR, P_EEP_LOCK, 1 );
     // Set goal speed
     dxl_write_word( BROADCAST_ID, P_GOAL_SPEED_L, 0 );
+	// AX-S1 赤外線を低感度モードに設定
+	
     _delay_ms(500);//1000
 }
 
@@ -53,6 +55,25 @@ void MotorControl(int id, int power) {
     else
         PrintCommStatus(CommStatus);
 #endif // _MOTOR_OFF_
+}
+
+/************************************************************************/
+// 関節用モーター実行関数
+// id モーターID
+// speed 速度
+// position 位置（0～1023、512はセンター）
+/************************************************************************/
+void MotorControlJoint(int id, int speed, int position) {
+	#ifndef _MOTOR_OFF_
+	int CommStatus = COMM_RXSUCCESS;
+	dxl_write_word( id, P_GOAL_POSITION_L, position );
+	dxl_write_word( id, P_GOAL_SPEED_L, speed );
+	CommStatus = dxl_get_result();
+	if( CommStatus == COMM_RXSUCCESS )
+	PrintErrorCode();
+	else
+	PrintCommStatus(CommStatus);
+	#endif // _MOTOR_OFF_
 }
 
 void Execute(int type) {
@@ -432,4 +453,47 @@ int GetCurrentSpeedL(void) {
 	LOG_DEBUG("GetCurrentSpeedL() is %d\n", speed);
 
 	return speed;
+}
+
+/**
+ * AX-S1の赤外線センサ値を取得する。
+ * @brief AX-S1の赤外線センサ値を取得する。
+ * @param (int *out_fire_data_left) 左側の赤外線センサ値
+ * @param (int *out_fire_data_center) 中央の赤外線センサ値
+ * @param (int *out_fire_data_right) 右側の赤外線センサ値
+ * @return なし
+ */
+void GetAXS1SensorFireData(int *out_fire_data_left, int *out_fire_data_center, int *out_fire_data_right)
+{
+	static int fire_data_left = 0;		// 左側の赤外線センサ値
+	static int fire_data_center = 0;	// 中央の赤外線センサ値
+	static int fire_data_right = 0;		// 右側の赤外線センサ値
+	
+	// 左側の赤外線センサ値
+	fire_data_left = dxl_read_byte(CENTER_AXS1_SENSOR, AXS1_ADDR_IR_LEFT_FIRE_DATA);
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return;
+	}
+	*out_fire_data_left = fire_data_left;
+	
+	// 中央の赤外線センサ値
+	fire_data_center = dxl_read_byte(CENTER_AXS1_SENSOR, AXS1_ADDR_IR_CENTER_FIRE_DATA);
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return;
+	}
+	*out_fire_data_center = fire_data_center;
+	
+	// 右側の赤外線センサ値
+	fire_data_right = dxl_read_byte(CENTER_AXS1_SENSOR, AXS1_ADDR_IR_RIGHT_FIRE_DATA);
+	if(dxl_get_result() != COMM_RXSUCCESS) {
+		// パケット通信失敗時、前回値を返す。
+		return;
+	}
+	*out_fire_data_right = fire_data_right;
+	
+	LOG_DEBUG("GetAXS1SensorFireData() [%4d, %4d, %4d]\n", fire_data_left, fire_data_center, fire_data_right);
+
+	return;
 }

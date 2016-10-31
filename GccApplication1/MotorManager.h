@@ -27,6 +27,8 @@
 #define P_CW_ANGLE_LIMIT_H  7
 #define P_CCW_ANGLE_LIMIT_L 8
 #define P_CCW_ANGLE_LIMIT_H 9
+#define P_GOAL_POSITION_L   30
+#define P_GOAL_POSITION_H   31
 #define P_GOAL_SPEED_L      32
 #define P_GOAL_SPEED_H      33
 #define P_EEP_LOCK          47
@@ -39,15 +41,24 @@
 #else // DINAMIXEL_AX_12
 #define RIGHT_MOTOR         32      // Right Motor address
 #define LEFT_MOTOR          33      // Left Motor address
+#define CENTER_AXS1_SENSOR	100		// AX-S1 Sensor address
 #define DELAY_MSEC          1       // Delay time
 #define OVER_RUN_TIME       500     // Over run time
 #endif // DINAMIXEL_AX_12
 
-#define COVER_MOTOR			18		// Cover Motor address
+#define PETBOTTOLE_MOTOR	18		// Cover Motor address
 
 // MX-12W Control Table Address
 #define CTRL_TBL_ADDR_PRESENT_SPEED_L	(38)	// Lowest byte of Current Speed 
 #define CTRL_TBL_ADDR_PRESENT_SPEED_H	(39)	// Highest byte of Current Speed
+
+// AX-S1  Control Table Address
+#define AXS1_ADDR_IR_LEFT_FIRE_DATA		(26)	// 左側の赤外線センサ値
+#define AXS1_ADDR_IR_CENTER_FIRE_DATA	(27)	// 中央の赤外線センサ値
+#define AXS1_ADDR_IR_RIGHT_FIRE_DATA	(28)	// 右側の赤外線センサ値
+#define AXS1_ADDR_IR_LIGHT_LEFT_DATA	(29)	// 左側の照度センサ値
+#define AXS1_ADDR_IR_LIGHT_CENTER_DATA	(30)	// 中央の照度センサ値
+#define AXS1_ADDR_IR_LIGHT_RIGHT_DATA	(31)	// 右側の照度センサ値
 
 // Motor Speed Value
 #ifdef DINAMIXEL_AX_12
@@ -137,6 +148,7 @@
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
+void MotorControlJoint(int id, int speed, int position);
 void Execute(int type);
 void setParamMoveAction(int right, int left);
 void StopMove(void);
@@ -167,6 +179,8 @@ void PrintCommStatus(int CommStatus);
 
 int GetCurrentSpeedR(void);
 int GetCurrentSpeedL(void);
+
+void GetAXS1SensorFireData(int *out_fire_data_left, int *out_fire_data_center, int *out_fire_data_right);
 
 int mCount;
 

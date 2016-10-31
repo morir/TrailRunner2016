@@ -28,6 +28,8 @@
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
 int getSensorPattern(void);
+void initPETbottlesMotor(void);
+void placePETbottles(void);
 
 int decideMoveAction(void);
 int getAction(void);
@@ -352,7 +354,8 @@ int main(void) {
     initIRSensor();
     MotorInit();
     initSerial();
-    
+	initPETbottlesMotor();
+
 	// ロボ動作開始
 
     // ショートカットモードを作る場合はここに入れる。
@@ -375,6 +378,7 @@ void executeTraceProcess(void) {
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
 	int waitMaxCount = 1;
+	int judgeSpeed = 0;
 
 	//初期動作（少しだけ直進）
 	StraightMove();
@@ -401,16 +405,88 @@ void executeTraceProcess(void) {
 			{
 				LED_on(1);
 				StopMove();
-				_delay_ms(1000);
+				while(1) {
+					judgeSpeed = GetCurrentSpeedR();
+					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+						//速度が30以下ならstop()抜ける
+						break;
+					}
+				}
+
+				//旋回実行
+				LeftTurnMove();
+				while(1) {
+					sensorPattern = getSensorPattern();
+					//旋回動作を抜けるための条件を判定
+					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+						//中央のセンサーが黒なら停止を実行
+						StopMove();
+						while(1) {
+							judgeSpeed = GetCurrentSpeedR();
+							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+								//速度が30以下ならstop()抜ける
+								break;
+							}
+						}
+						//逆旋回を実行：センサーを中央に戻すため
+						RightTurnMove();
+						while(1) {
+							//逆旋回動作を抜けるための条件を判定
+							sensorPattern = getSensorPattern();
+							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+								StraightMove();
+								break;
+							}
+						}
+						break;
+					}
+				}
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
 				LED_on(2);
 				StopMove();
-				_delay_ms(1000);
+				while(1) {
+					judgeSpeed = GetCurrentSpeedR();
+					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+						//速度が30以下ならstop()抜ける
+						break;
+					}
+				}
+
+				//旋回実行
+				RightTurnMove();
+				while(1) {
+					sensorPattern = getSensorPattern();
+					//旋回動作を抜けるための条件を判定
+					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+						//中央のセンサーが黒なら停止を実行
+						StopMove();
+						while(1) {
+							judgeSpeed = GetCurrentSpeedR();
+							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
+								//速度が30以下ならstop()抜ける
+								break;
+							}
+						}
+						//逆旋回を実行：センサーを中央に戻すため
+						RightTurnMove();
+						while(1) {
+							//逆旋回動作を抜けるための条件を判定
+							sensorPattern = getSensorPattern();
+							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+								StraightMove();
+								break;
+							}
+						}
+						break;
+					}
+				}
+
 			}
 
 			//左旋回中復帰時の動作
+/* 復帰動作は一旦コメントアウト。動作検証後、変更か削除します。
 			if (previousTraceAction == TRACE_L_TURN && currentTraceAction == TRACE_L_TURN_END) {
 				//RightTurnMove();//逆回転
 				StopMove();
@@ -425,6 +501,7 @@ void executeTraceProcess(void) {
 				_delay_ms(1000);	// 100ms 逆回転を入力（強さと時間は調整必要）
 				currentTraceAction = TRACE_L_ROUND_MIDDLE;
 			}
+*/
 			Execute(currentTraceAction);
 /* お試し miyano ここから */
 /* 試して意味なしだったら削除します。
@@ -543,14 +620,35 @@ void executeFinalAction(void)
 	_delay_ms(900);
 	Execute(MOVE_SELECTION_TYPE_STOP);
 	_delay_ms(100);
-	MotorControl( COVER_MOTOR, 300 );
-	_delay_ms(1500);
-	MotorControl( COVER_MOTOR, 0 );
-	_delay_ms(100);
+
+	//ペットボトル設置を実行
+	placePETbottles();
+
 	MotorControl( RIGHT_MOTOR, 1623 );
 	MotorControl( LEFT_MOTOR, 600 );
 	_delay_ms(500);
 	Execute(MOVE_SELECTION_TYPE_STOP);
+}
+
+/************************************************************************/
+// ペットボトル用モータの初期設定
+// ペットボトル設置用モーターを少し前方に傾ける。
+/************************************************************************/
+void initPETbottlesMotor(void) {
+	//最大速度で、642の位置へ動かす
+	MotorControlJoint( PETBOTTOLE_MOTOR, 0, 642 );
+}
+
+/************************************************************************/
+// ペットボトル設置
+/************************************************************************/
+void placePETbottles(void) {
+	_delay_ms(1000);//1秒待つ⇒動作に合わせて変更してください
+	MotorControlJoint( PETBOTTOLE_MOTOR, 30, 352 );//モーターを後方にゆっくり傾ける
+	_delay_ms(6000);//6秒継続
+	MotorControlJoint( PETBOTTOLE_MOTOR, 100, 512 );//モーターをセンター位置に戻す
+	_delay_ms(3000);//3秒待つ⇒動作に合わせて変更してください
+
 }
 
 /**
