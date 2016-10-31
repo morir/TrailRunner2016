@@ -14,8 +14,12 @@
 
 // Speed settings
 int BaseSpeed = 200;
-float LowRate = 0.90;
-float HighRate = 0.80;
+float HighRate = 0.90;
+float SoftRoundRate = 0.80;
+float MiddleRoundRate = 0.70;
+float TightRoundRate = 0.60;
+float TurnInsideRate = 0.75;
+float HalfRate = 0.50;
 
 void MotorInit(void) {
     dxl_initialize( 0, DEFAULT_BAUDNUM ); // Not using device index
@@ -137,14 +141,30 @@ void Execute(int type) {
 			LOG_INFO("Right Straight\r\n");
 			RightStraightMove();
 			break;
-		case TRACE_L_ROUND:
-			LOG_INFO("Left Round\r\n");
-			LeftRoundMove();
+		case TRACE_L_ROUND_SOFT:
+			LOG_INFO("Left Soft Round\r\n");
+			LeftSoftRoundMove();
 			break;
-		case TRACE_R_ROUND:
-            LOG_INFO("Right Round\r\n");
-            RightRoundMove();
+		case TRACE_L_ROUND_MIDDLE:
+			LOG_INFO("Left Middle Round\r\n");
+			LeftMiddleRoundMove();
+			break;
+		case TRACE_L_ROUND_TIGHT:
+			LOG_INFO("Left Tight Round\r\n");
+			LeftTightRoundMove();
+			break;
+		case TRACE_R_ROUND_SOFT:
+            LOG_INFO("Right Soft Round\r\n");
+            RightSoftRoundMove();
             break;
+		case TRACE_R_ROUND_MIDDLE:
+			LOG_INFO("Right Middle Round\r\n");
+			RightMiddleRoundMove();
+			break;
+		case TRACE_R_ROUND_TIGHT:
+			LOG_INFO("Right Tight Round\r\n");
+			RightTightRoundMove();
+			break;
 		case TRACE_L_TURN:
             LOG_INFO("Left Turn\r\n");
             LeftTurnMove();
@@ -242,7 +262,7 @@ void StraightMove(void) {
 }
 
 void LeftStraightMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * LowRate);
+	int leftSpeed = (int)((float)BaseSpeed * HighRate);
 	int rightSpeed = (1024 + BaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
@@ -250,37 +270,65 @@ void LeftStraightMove(void) {
 
 void RightStraightMove(void) {
 	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + (int)((float)BaseSpeed * LowRate));
-
-	Move(leftSpeed, rightSpeed);
-}
-
-void LeftRoundMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * HighRate);
-	int rightSpeed = (1024 + BaseSpeed);
-
-	Move(leftSpeed, rightSpeed);
-}
-
-void RightRoundMove(void) {
-	int leftSpeed = BaseSpeed;
 	int rightSpeed = (1024 + (int)((float)BaseSpeed * HighRate));
 
 	Move(leftSpeed, rightSpeed);
 }
 
+void LeftSoftRoundMove(void) {
+	int leftSpeed = (int)((float)BaseSpeed * SoftRoundRate);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftMiddleRoundMove(void) {
+	int leftSpeed = (int)((float)BaseSpeed * MiddleRoundRate);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftTightRoundMove(void) {
+	int leftSpeed = (int)((float)BaseSpeed * TightRoundRate);
+	int rightSpeed = (1024 + BaseSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightSoftRoundMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + (int)((float)BaseSpeed * SoftRoundRate));
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightMiddleRoundMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + (int)((float)BaseSpeed * MiddleRoundRate));
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightTightRoundMove(void) {
+	int leftSpeed = BaseSpeed;
+	int rightSpeed = (1024 + (int)((float)BaseSpeed * TightRoundRate));
+
+	Move(leftSpeed, rightSpeed);
+}
+
 void LeftTurnMove(void) {
-	int speed = (BaseSpeed /2);
-	int leftSpeed = (1024 + speed * 0.8);
+	int speed = (BaseSpeed * HalfRate);
+	int leftSpeed = (1024 + (speed * TurnInsideRate));
 	int rightSpeed = (1024 + speed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightTurnMove(void) {
-	int speed = (BaseSpeed /2);
+	int speed = (BaseSpeed * HalfRate);
 	int leftSpeed = speed;
-	int rightSpeed = speed * 0.8;
+	int rightSpeed = (speed * TurnInsideRate);
 
 	Move(leftSpeed, rightSpeed);
 }

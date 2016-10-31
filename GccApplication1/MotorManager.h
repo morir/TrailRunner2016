@@ -128,18 +128,22 @@
 #define MOVE_SELECTION_TYPE_LEFTTURN_3  1016
 
 // Trace pattern
-#define TRACE_STRAIGHT		0	// 直進
-#define TRACE_L_STRAIGHT	1	// 左前進
-#define TRACE_L_ROUND		2	// 左カーブ
-#define TRACE_L_TURN_START	7	// 左旋回開始
-#define TRACE_L_TURN		5	// 左旋回
-#define TRACE_L_TURN_END	8	// 左旋回終了
-#define TRACE_R_STRAIGHT	3	// 右前進
-#define TRACE_R_ROUND		4	// 右カーブ
-#define TRACE_R_TURN_START	9	// 右旋回開始
-#define TRACE_R_TURN		6	// 右旋回
-#define TRACE_R_TURN_END	10	// 右旋回終了
-#define TRACE_FINALACTION	999	// ゴール動作
+#define TRACE_STRAIGHT			0	// 直進
+#define TRACE_L_STRAIGHT		1	// 左前進
+#define TRACE_L_ROUND_SOFT		7	// 左カーブ(Soft)
+#define TRACE_L_ROUND_MIDDLE	2	// 左カーブ(Middle)
+#define TRACE_L_ROUND_TIGHT		8	// 左カーブ(Tight)
+#define TRACE_L_TURN_START		11	// 左旋回開始
+#define TRACE_L_TURN			5	// 左旋回
+#define TRACE_L_TURN_END		12	// 左旋回終了
+#define TRACE_R_STRAIGHT		3	// 右前進
+#define TRACE_R_ROUND_SOFT		9	// 右カーブ(Soft)
+#define TRACE_R_ROUND_MIDDLE	4	// 右カーブ(Middle)
+#define TRACE_R_ROUND_TIGHT		10	// 右カーブ(Tight)
+#define TRACE_R_TURN_START		13	// 右旋回開始
+#define TRACE_R_TURN			6	// 右旋回
+#define TRACE_R_TURN_END		14	// 右旋回終了
+#define TRACE_FINALACTION		999	// ゴール動作
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
@@ -162,8 +166,12 @@ void BackMove(void);
 void Move(int leftSpeed, int rightSpeed);
 void LeftStraightMove(void);
 void RightStraightMove(void);
-void LeftRoundMove(void);
-void RightRoundMove(void);
+void LeftSoftRoundMove(void);
+void LeftMiddleRoundMove(void);
+void LeftTightRoundMove(void);
+void RightSoftRoundMove(void);
+void RightMiddleRoundMove(void);
+void RightTightRoundMove(void);
 void LeftTurnMove(void);
 void RightTurnMove(void);
 void PrintErrorCode(void);
