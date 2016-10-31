@@ -24,12 +24,14 @@
 #define _LED_ON_
 
 #define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
+#define STOP_JUDGE_MAX_LIMIT	(30)//停止判定の上限値
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
 void placePETbottles(void);
+void stopMoveLessThanVal(int val);
 
 int decideMoveAction(void);
 int getAction(void);
@@ -400,14 +402,7 @@ void executeTraceProcess(void) {
 			if(currentTraceAction == TRACE_L_TURN)
 			{
 				LED_on(1);
-				StopMove();
-				while(1) {
-					judgeSpeed = GetCurrentSpeedR();
-					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
-						//速度が30以下ならstop()抜ける
-						break;
-					}
-				}
+				stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
 				//旋回実行
 				LeftTurnMove();
@@ -416,14 +411,8 @@ void executeTraceProcess(void) {
 					//旋回動作を抜けるための条件を判定
 					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 						//中央のセンサーが黒なら停止を実行
-						StopMove();
-						while(1) {
-							judgeSpeed = GetCurrentSpeedR();
-							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
-								//速度が30以下ならstop()抜ける
-								break;
-							}
-						}
+						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
 						//逆旋回を実行：センサーを中央に戻すため
 						RightTurnMove();
 						while(1) {
@@ -441,14 +430,7 @@ void executeTraceProcess(void) {
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
 				LED_on(2);
-				StopMove();
-				while(1) {
-					judgeSpeed = GetCurrentSpeedR();
-					if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
-						//速度が30以下ならstop()抜ける
-						break;
-					}
-				}
+				stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
 				//旋回実行
 				RightTurnMove();
@@ -457,14 +439,8 @@ void executeTraceProcess(void) {
 					//旋回動作を抜けるための条件を判定
 					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 						//中央のセンサーが黒なら停止を実行
-						StopMove();
-						while(1) {
-							judgeSpeed = GetCurrentSpeedR();
-							if( (judgeSpeed >= 0 || judgeSpeed <= 30) || (judgeSpeed >= 1024 || judgeSpeed <= 1054) ) {
-								//速度が30以下ならstop()抜ける
-								break;
-							}
-						}
+						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
 						//逆旋回を実行：センサーを中央に戻すため
 						RightTurnMove();
 						while(1) {
@@ -645,6 +621,23 @@ void placePETbottles(void) {
 	MotorControlJoint( PETBOTTOLE_MOTOR, 100, 512 );//モーターをセンター位置に戻す
 	_delay_ms(3000);//3秒待つ⇒動作に合わせて変更してください
 
+}
+
+/**
+ * 速度が0～入力値以下になるまで、停止動作を継続する 
+ * @param maxVal 停止判定の上限値
+ */
+void stopMoveLessThanVal(int maxVal){
+	StopMove();//停止を実行
+	int judgeSpeed = 0;
+	while(1) {
+		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
+		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
+		  (judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+			//速度がmaxVal以下ならstop()抜ける
+			break;
+		}
+	}
 }
 
 /**
