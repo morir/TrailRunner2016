@@ -24,7 +24,7 @@
 #define _LED_ON_
 
 #define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
-#define STOP_JUDGE_MAX_LIMIT	(30)//停止判定の上限値
+#define STOP_JUDGE_MAX_LIMIT	(10)//停止判定の上限値
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
@@ -90,28 +90,28 @@ int StraightTable[] = {
 	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_STRAIGHT,
+	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
 	/* 09:BIT_01001x */	TRACE_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_STRAIGHT,
+	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_L_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_STRAIGHT,
+	/* 13:BIT_01101x */	TRACE_R_TURN,
 	/* 14:BIT_01110x */	TRACE_STRAIGHT,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
 	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
 	/* 17:BIT_10001x */	TRACE_STRAIGHT,
 	/* 18:BIT_10010x */	TRACE_STRAIGHT,
 	/* 19:BIT_10011x */	TRACE_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_STRAIGHT,
+	/* 20:BIT_10100x */	TRACE_L_TURN,
 	/* 21:BIT_10101x */	TRACE_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_STRAIGHT,
+	/* 22:BIT_10110x */	TRACE_L_TURN,
 	/* 23:BIT_10111x */	TRACE_STRAIGHT,
 	/* 24:BIT_11000x */	TRACE_L_TURN,
 	/* 25:BIT_11001x */	TRACE_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_STRAIGHT,
+	/* 26:BIT_11010x */	TRACE_L_TURN,
 	/* 27:BIT_11011x */	TRACE_STRAIGHT,
 	/* 28:BIT_11100x */	TRACE_L_TURN,
 	/* 29:BIT_11101x */	TRACE_STRAIGHT,
@@ -125,28 +125,28 @@ int LeftStraightTable[] = {
 	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_L_STRAIGHT,
+	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
 	/* 09:BIT_01001x */	TRACE_L_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_L_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_L_STRAIGHT,
+	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_R_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_L_STRAIGHT,
+	/* 13:BIT_01101x */	TRACE_R_TURN,
 	/* 14:BIT_01110x */	TRACE_L_STRAIGHT,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
 	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
 	/* 17:BIT_10001x */	TRACE_L_STRAIGHT,
 	/* 18:BIT_10010x */	TRACE_L_STRAIGHT,
 	/* 19:BIT_10011x */	TRACE_L_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_L_STRAIGHT,
+	/* 20:BIT_10100x */	TRACE_L_TURN,
 	/* 21:BIT_10101x */	TRACE_L_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_L_STRAIGHT,
+	/* 22:BIT_10110x */	TRACE_L_TURN,
 	/* 23:BIT_10111x */	TRACE_L_STRAIGHT,
 	/* 24:BIT_11000x */	TRACE_L_TURN,
 	/* 25:BIT_11001x */	TRACE_L_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_L_STRAIGHT,
+	/* 26:BIT_11010x */	TRACE_L_TURN,
 	/* 27:BIT_11011x */	TRACE_L_STRAIGHT,
 	/* 28:BIT_11100x */	TRACE_L_TURN,
 	/* 29:BIT_11101x */	TRACE_L_STRAIGHT,
@@ -160,28 +160,28 @@ int LeftRoundTable[] = {
 	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_L_ROUND_MIDDLE,
+	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_L_ROUND_MIDDLE,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
 	/* 09:BIT_01001x */	TRACE_L_ROUND_MIDDLE,
 	/* 10:BIT_01010x */	TRACE_L_ROUND_MIDDLE,
-	/* 11:BIT_01011x */	TRACE_L_ROUND_MIDDLE,
+	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_L_ROUND_SOFT,
-	/* 13:BIT_01101x */	TRACE_L_ROUND_MIDDLE,
+	/* 13:BIT_01101x */	TRACE_R_TURN,
 	/* 14:BIT_01110x */	TRACE_L_ROUND_MIDDLE,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
 	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
 	/* 17:BIT_10001x */	TRACE_L_ROUND_MIDDLE,
 	/* 18:BIT_10010x */	TRACE_L_ROUND_MIDDLE,
 	/* 19:BIT_10011x */	TRACE_L_ROUND_MIDDLE,
-	/* 20:BIT_10100x */	TRACE_L_ROUND_MIDDLE,
+	/* 20:BIT_10100x */	TRACE_L_TURN,
 	/* 21:BIT_10101x */	TRACE_L_ROUND_MIDDLE,
-	/* 22:BIT_10110x */	TRACE_L_ROUND_MIDDLE,
+	/* 22:BIT_10110x */	TRACE_L_TURN,
 	/* 23:BIT_10111x */	TRACE_L_ROUND_MIDDLE,
 	/* 24:BIT_11000x */	TRACE_L_TURN,
 	/* 25:BIT_11001x */	TRACE_L_ROUND_MIDDLE,
-	/* 26:BIT_11010x */	TRACE_L_ROUND_MIDDLE,
+	/* 26:BIT_11010x */	TRACE_L_TURN,
 	/* 27:BIT_11011x */	TRACE_L_ROUND_MIDDLE,
 	/* 28:BIT_11100x */	TRACE_L_TURN,
 	/* 29:BIT_11101x */	TRACE_L_ROUND_MIDDLE,
@@ -230,28 +230,28 @@ int RightStraightTable[] = {
 	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_STRAIGHT,
+	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_L_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
 	/* 09:BIT_01001x */	TRACE_R_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_R_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_R_STRAIGHT,
+	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_R_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_R_STRAIGHT,
+	/* 13:BIT_01101x */	TRACE_R_TURN,
 	/* 14:BIT_01110x */	TRACE_R_STRAIGHT,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
 	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
 	/* 17:BIT_10001x */	TRACE_R_STRAIGHT,
 	/* 18:BIT_10010x */	TRACE_R_STRAIGHT,
 	/* 19:BIT_10011x */	TRACE_R_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_R_STRAIGHT,
+	/* 20:BIT_10100x */	TRACE_L_TURN,
 	/* 21:BIT_10101x */	TRACE_R_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_R_STRAIGHT,
+	/* 22:BIT_10110x */	TRACE_L_TURN,
 	/* 23:BIT_10111x */	TRACE_R_STRAIGHT,
 	/* 24:BIT_11000x */	TRACE_L_TURN,
 	/* 25:BIT_11001x */	TRACE_R_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_R_STRAIGHT,
+	/* 26:BIT_11010x */	TRACE_L_TURN,
 	/* 27:BIT_11011x */	TRACE_R_STRAIGHT,
 	/* 28:BIT_11100x */	TRACE_L_TURN,
 	/* 29:BIT_11101x */	TRACE_R_STRAIGHT,
@@ -265,15 +265,15 @@ int RightRoundTable[] = {
 	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_ROUND_MIDDLE,
+	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_ROUND_SOFT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
 	/* 09:BIT_01001x */	TRACE_R_ROUND_MIDDLE,
 	/* 10:BIT_01010x */	TRACE_R_ROUND_MIDDLE,
-	/* 11:BIT_01011x */	TRACE_R_ROUND_MIDDLE,
+	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_R_ROUND_MIDDLE,
-	/* 13:BIT_01101x */	TRACE_R_ROUND_MIDDLE,
+	/* 13:BIT_01101x */	TRACE_R_TURN,
 	/* 14:BIT_01110x */	TRACE_R_ROUND_MIDDLE,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
 	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
@@ -398,11 +398,14 @@ void executeTraceProcess(void) {
 
 		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を決定する。
 		currentTraceAction = MatrixTable[previousTraceAction][(sensorPattern / 2)];
-		LOG_INFO("(sensorPattern / 2) %3d\r\n", (sensorPattern / 2));
-		LOG_INFO("previousTraceAction %3d: sensorPattern %3d: currentTraceAction: %3d \r\n",
-		         previousTraceAction, sensorPattern, currentTraceAction);
-		if(currentTraceAction != previousTraceAction)
-		{
+//		LOG_INFO("(sensorPattern / 2) %3d\r\n", (sensorPattern / 2));
+//		LOG_INFO("previousTraceAction %3d: sensorPattern %3d: currentTraceAction: %3d \r\n",
+//		         previousTraceAction, sensorPattern, currentTraceAction);
+//		if(currentTraceAction != previousTraceAction)
+//		{
+			// LEDを設定
+			setLED();
+
 			if(currentTraceAction == TRACE_L_TURN)
 			{
 				LED_on(1);
@@ -413,7 +416,8 @@ void executeTraceProcess(void) {
 				while(1) {
 					sensorPattern = getSensorPattern();
 					//旋回動作を抜けるための条件を判定
-					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+					if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001) {
+				LED_on(2);
 						//中央のセンサーが黒なら停止を実行
 						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
@@ -423,17 +427,22 @@ void executeTraceProcess(void) {
 							//逆旋回動作を抜けるための条件を判定
 							sensorPattern = getSensorPattern();
 							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-								StraightMove();
+				LED_on(3);
+								stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+								currentTraceAction = TRACE_STRAIGHT;
 								break;
 							}
 						}
+						break;
+					} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+						currentTraceAction = TRACE_STRAIGHT;
 						break;
 					}
 				}
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
-				LED_on(2);
+				LED_on(5);
 				stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
 				//旋回実行
@@ -441,20 +450,26 @@ void executeTraceProcess(void) {
 				while(1) {
 					sensorPattern = getSensorPattern();
 					//旋回動作を抜けるための条件を判定
-					if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+					if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101) {
+						LED_on(4);
 						//中央のセンサーが黒なら停止を実行
 						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
 						//逆旋回を実行：センサーを中央に戻すため
-						RightTurnMove();
+						LeftTurnMove();
 						while(1) {
 							//逆旋回動作を抜けるための条件を判定
 							sensorPattern = getSensorPattern();
 							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-								StraightMove();
+								LED_on(3);
+								stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+								currentTraceAction = TRACE_STRAIGHT;
 								break;
 							}
 						}
+						break;
+					} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+						currentTraceAction = TRACE_STRAIGHT;
 						break;
 					}
 				}
@@ -505,9 +520,9 @@ void executeTraceProcess(void) {
 			mMoveCount++;
 */
 /* お試し miyano ここまで */
-		}
+//		}
 
-		_delay_ms(5);// delayTimeの間隔を空ける
+		_delay_ms(1);// delayTimeの間隔を空ける
 
 		// 今回の動作を前回の動作に退避する。
 		previousTraceAction = currentTraceAction;
@@ -523,7 +538,7 @@ int getSensorPattern(void) {
     int ptn = 0;
 	
 	// LEDを設定
-	setLED();
+	//setLED();
 	
 	// センサー値を取得
 	getSensors();

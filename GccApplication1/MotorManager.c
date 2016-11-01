@@ -13,7 +13,7 @@
 //#define _MOTOR_OFF_
 
 // Speed settings
-int BaseSpeed = 200;
+int BaseSpeed = 230;
 float HighRate = 0.90;
 float SoftRoundRate = 0.80;
 float MiddleRoundRate = 0.70;
@@ -255,70 +255,159 @@ void Move(int leftSpeed, int rightSpeed)
 }
 
 void StraightMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + BaseSpeed);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedL();
+	if (currentSpeed < 50) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+	} else if (currentSpeed < 100) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = execBaseSpeed;
+	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void LeftStraightMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * HighRate);
-	int rightSpeed = (1024 + BaseSpeed);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedR();
+	if (currentSpeed < 1074) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 1124) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = (int)((float)execBaseSpeed * HighRate);
+	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightStraightMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + (int)((float)BaseSpeed * HighRate));
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedL();
+	if (currentSpeed < 50) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 100) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = execBaseSpeed;
+	int rightSpeed = (1024 + (int)((float)execBaseSpeed * HighRate));
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void LeftSoftRoundMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * SoftRoundRate);
-	int rightSpeed = (1024 + BaseSpeed);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedR();
+	if (currentSpeed < 1074) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 1124) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = (int)((float)execBaseSpeed * SoftRoundRate);
+	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void LeftMiddleRoundMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * MiddleRoundRate);
-	int rightSpeed = (1024 + BaseSpeed);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedR();
+	if (currentSpeed < 1074) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 1124) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = (int)((float)execBaseSpeed * MiddleRoundRate);
+	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void LeftTightRoundMove(void) {
-	int leftSpeed = (int)((float)BaseSpeed * TightRoundRate);
-	int rightSpeed = (1024 + BaseSpeed);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedR();
+	if (currentSpeed < 1074) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 1124) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = (int)((float)execBaseSpeed * TightRoundRate);
+	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightSoftRoundMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + (int)((float)BaseSpeed * SoftRoundRate));
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedL();
+	if (currentSpeed < 50) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 100) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = execBaseSpeed;
+	int rightSpeed = (1024 + (int)((float)execBaseSpeed * SoftRoundRate));
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightMiddleRoundMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + (int)((float)BaseSpeed * MiddleRoundRate));
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedL();
+	if (currentSpeed < 50) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+		} else if (currentSpeed < 100) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = execBaseSpeed;
+	int rightSpeed = (1024 + (int)((float)execBaseSpeed * MiddleRoundRate));
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightTightRoundMove(void) {
-	int leftSpeed = BaseSpeed;
-	int rightSpeed = (1024 + (int)((float)BaseSpeed * TightRoundRate));
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+	int currentSpeed = (int)GetCurrentSpeedL();
+	if (currentSpeed < 50) {
+		execBaseSpeed = ((BaseSpeed * 30) / 100);
+	} else if (currentSpeed < 100) {
+		execBaseSpeed = ((BaseSpeed * 60) / 100);
+	}
+
+	int leftSpeed = execBaseSpeed;
+	int rightSpeed = (1024 + (int)((float)execBaseSpeed * TightRoundRate));
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void LeftTurnMove(void) {
-	int speed = (BaseSpeed * HalfRate);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+//	if (GetCurrentSpeedL < 50) {
+//		execBaseSpeed = ((BaseSpeed * 30) / 100);
+//		} else if (GetCurrentSpeedL < 100) {
+//		execBaseSpeed = ((BaseSpeed * 60) / 100);
+//	}
+
+	int speed = (execBaseSpeed * HalfRate);
 	int leftSpeed = (1024 + (speed * TurnInsideRate));
 	int rightSpeed = (1024 + speed);
 
@@ -326,7 +415,15 @@ void LeftTurnMove(void) {
 }
 
 void RightTurnMove(void) {
-	int speed = (BaseSpeed * HalfRate);
+	//現在速度が目標値と離れている場合、ゆっくり回転させる
+	int execBaseSpeed = BaseSpeed;
+//	if (GetCurrentSpeedL < 50) {
+//		execBaseSpeed = ((BaseSpeed * 30) / 100);
+//		} else if (GetCurrentSpeedL < 100) {
+//		execBaseSpeed = ((BaseSpeed * 60) / 100);
+//	}
+
+	int speed = (execBaseSpeed * HalfRate);
 	int leftSpeed = speed;
 	int rightSpeed = (speed * TurnInsideRate);
 
