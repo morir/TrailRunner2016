@@ -256,15 +256,16 @@ void Move(int leftSpeed, int rightSpeed)
 
 void StraightMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedL();
-
-	if( execBaseSpeed < (BaseSpeed - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedL();
+//
+	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + execBaseSpeed);
@@ -274,15 +275,16 @@ void StraightMove(void) {
 
 void LeftStraightMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedR();
-	
-	if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedR();
+	//
+	//if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = (int)((float)execBaseSpeed * HighRate);
 	int rightSpeed = (1024 + execBaseSpeed);
@@ -292,15 +294,16 @@ void LeftStraightMove(void) {
 
 void RightStraightMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedL();
-
-	if( execBaseSpeed < (BaseSpeed - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedL();
+//
+	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + (int)((float)execBaseSpeed * HighRate));
@@ -310,15 +313,16 @@ void RightStraightMove(void) {
 
 void LeftSoftRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedR();
-	
-	if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedR();
+	//
+	//if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = (int)((float)execBaseSpeed * SoftRoundRate);
 	int rightSpeed = (1024 + execBaseSpeed);
@@ -328,15 +332,16 @@ void LeftSoftRoundMove(void) {
 
 void LeftMiddleRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedR();
-	
-	if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedR();
+	//
+	//if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = (int)((float)execBaseSpeed * MiddleRoundRate);
 	int rightSpeed = (1024 + execBaseSpeed);
@@ -346,15 +351,16 @@ void LeftMiddleRoundMove(void) {
 
 void LeftTightRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedR();
-	
-	if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedR();
+	//
+	//if( execBaseSpeed < ((BaseSpeed + 1024) - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = (int)((float)execBaseSpeed * TightRoundRate);
 	int rightSpeed = (1024 + execBaseSpeed);
@@ -364,15 +370,16 @@ void LeftTightRoundMove(void) {
 
 void RightSoftRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedL();
-
-	if( execBaseSpeed < (BaseSpeed - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedL();
+//
+	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + (int)((float)execBaseSpeed * SoftRoundRate));
@@ -382,15 +389,16 @@ void RightSoftRoundMove(void) {
 
 void RightMiddleRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedL();
-
-	if( execBaseSpeed < (BaseSpeed - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-		} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
+	//int execBaseSpeed = (int)GetCurrentSpeedL();
+//
+	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+		//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + (int)((float)execBaseSpeed * MiddleRoundRate));
@@ -400,16 +408,17 @@ void RightMiddleRoundMove(void) {
 
 void RightTightRoundMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	int execBaseSpeed = (int)GetCurrentSpeedL();
+	//int execBaseSpeed = (int)GetCurrentSpeedL();
+//
+	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
+		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
+	//} else {
+		////現在速度が、目標速度同等なら目標速度で動かす
+		//execBaseSpeed = BaseSpeed;
+	//}
+	int execBaseSpeed = BaseSpeed;
 
-	if( execBaseSpeed < (BaseSpeed - 10) ) {
-		//現在速度が、目標速度より小さい場合、現在速度＋20で動かす
-		execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
-	} else {
-		//現在速度が、目標速度同等なら目標速度で動かす
-		execBaseSpeed = BaseSpeed;
-	}
-	
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + (int)((float)execBaseSpeed * TightRoundRate));
 

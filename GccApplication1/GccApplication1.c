@@ -615,7 +615,8 @@ int executeLeftTurn(void){
 	while(1) {
 		sensorPattern = getSensorPattern();
 		//旋回動作を抜けるための条件を判定
-		if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001 ||
+		if (
+		//sensorPattern == BIT_010000 || sensorPattern == BIT_010001 ||
 			sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
 			sensorPattern == BIT_000100 || sensorPattern == BIT_000101
 			) {
@@ -681,7 +682,8 @@ int executeRightTurn(void){
 	while(1) {
 		sensorPattern = getSensorPattern();
 		//旋回動作を抜けるための条件を判定
-		if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101 ||
+		if (
+		//sensorPattern == BIT_000100 || sensorPattern == BIT_000101 ||
 		sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
 		sensorPattern == BIT_010000 || sensorPattern == BIT_010001
 		) {
