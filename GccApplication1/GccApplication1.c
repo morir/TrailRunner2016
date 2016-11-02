@@ -33,6 +33,8 @@ void executeTraceProcess(void);
 int isRightRound(int action);
 int isLeftRound(int action);
 int isStraightDetected(int sensor);
+void executeCounterAction(int action);
+int doesNeedToResetSpeed(int action);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
 void placePETbottles(void);
@@ -396,7 +398,8 @@ void executeTraceProcess(void) {
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
 	int waitMaxCount = 1;
-
+    static int counter = 0;
+	
 	//初期動作（少しだけ直進）
 	StraightMove();
 	_delay_ms(100);	// 10ms 間隔を空ける
@@ -453,15 +456,26 @@ void executeTraceProcess(void) {
 			}
 			else if (isRightRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					Execute(TRACE_L_ROUND_TIGHT);
+					executeCounterAction(previousTraceAction);
 					_delay_ms(100);
 				}
 			}
 			else if (isLeftRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					Execute(TRACE_R_ROUND_TIGHT);
+					executeCounterAction(previousTraceAction);
 					_delay_ms(100);
 				}
+			}
+			
+			if (doesNeedToResetSpeed(currentTraceAction)) {
+				BaseSpeed = 1;
+			}
+			
+			counter++;
+			// 2秒で速度が200に達するように10msで1インクリメントする
+			if ((counter % 10) == 0) {
+				BaseSpeed++;
+				counter = 0;
 			}
 
 			Execute(currentTraceAction);
@@ -500,21 +514,70 @@ void executeTraceProcess(void) {
 	}
 }
 
+/**
+ * 右カーブ動作中か判定する 
+ * @param action 現在動作中のパターン
+ * @return 戻り値
+ */
 int isRightRound(int action) {
 	return ((action == TRACE_R_ROUND_MIDDLE) ||
 			(action == TRACE_R_ROUND_SOFT) ||
 			(action == TRACE_R_ROUND_TIGHT));
 }
 
+/**
+ * 左カーブ動作中か判定する 
+ * @param action 現在動作中のパターン
+ * @return 戻り値
+ */
 int isLeftRound(int action) {
 	return ((action == TRACE_L_ROUND_MIDDLE) ||
 			(action == TRACE_L_ROUND_SOFT) ||
 			(action == TRACE_L_ROUND_TIGHT));
 }
 
+/**
+ * 中央のセンサでラインを検出したか判定する 
+ * @param sensor センサの検出パターン
+ * @return 戻り値
+ */
 int isStraightDetected(int sensor) {
-	return ((sensor == BIT_001000) ||
-			(sensor == BIT_001001));
+	return ((sensor == BIT_001000) || (sensor == BIT_001001));
+}
+
+/**
+ * 動作中のカーブと反対の動作を実行する 
+ * @param action 現在動作中のカーブ
+ * @return 戻り値
+ */
+void executeCounterAction(int action) {
+	if(action == TRACE_L_ROUND_SOFT) {
+		Execute(TRACE_R_ROUND_SOFT);
+	}
+	else if (action == TRACE_L_ROUND_MIDDLE) {
+		Execute(TRACE_R_ROUND_MIDDLE);
+	}
+	else if (action == TRACE_L_ROUND_TIGHT) {
+		Execute(TRACE_R_ROUND_TIGHT);
+	}
+	else if(action == TRACE_R_ROUND_SOFT) {
+		Execute(TRACE_L_ROUND_SOFT);
+	}
+	else if (action == TRACE_R_ROUND_MIDDLE) {
+		Execute(TRACE_L_ROUND_MIDDLE);
+	}
+	else if (action == TRACE_R_ROUND_TIGHT) {
+		Execute(TRACE_L_ROUND_TIGHT);
+	}
+}
+
+/**
+ * 速度をリセットするか判定する 
+ * @param action 現在動作中のパターン
+ * @return 戻り値
+ */
+int doesNeedToResetSpeed(int action) {
+	return ((action == TRACE_L_TURN) || (action == TRACE_R_TURN));
 }
 
 /**

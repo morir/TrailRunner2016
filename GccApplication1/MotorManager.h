@@ -188,5 +188,6 @@ int GetCurrentSpeedL(void);
 void GetAXS1SensorFireData(int *out_fire_data_left, int *out_fire_data_center, int *out_fire_data_right);
 
 int mCount;
+int BaseSpeed;
 
 #endif // MOTOR_MANAGER_H_
