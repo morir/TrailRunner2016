@@ -369,6 +369,7 @@ int main(void) {
     MotorInit();
     initSerial();
 	initPETbottlesMotor();
+	getSensorPattern();
 
 	// ロボ動作開始
 
@@ -452,13 +453,13 @@ void executeTraceProcess(void) {
 			}
 			else if (isRightRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					execute(TRACE_L_ROUND_TIGHT);
+					Execute(TRACE_L_ROUND_TIGHT);
 					_delay_ms(100);
 				}
 			}
 			else if (isLeftRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					execute(TRACE_R_ROUND_TIGHT);
+					Execute(TRACE_R_ROUND_TIGHT);
 					_delay_ms(100);
 				}
 			}

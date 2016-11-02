@@ -254,23 +254,33 @@ void BackLowMove(void) {
 
 void Move(int leftSpeed, int rightSpeed)
 {
-	LOG_INFO("left = %3d, Right = %3d\r\n", leftSpeed, rightSpeed);
+	//LOG_INFO("left = %3d, Right = %3d\r\n", leftSpeed, rightSpeed);
     MotorControl(LEFT_MOTOR, leftSpeed);
     MotorControl(RIGHT_MOTOR, rightSpeed);
 }
 
 void StraightMove(void) {
 	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	//int execBaseSpeed = (int)GetCurrentSpeedL();
-//
-	//if( execBaseSpeed < (BaseSpeed - 10) ) {
+	int execBaseSpeed = (int)GetCurrentSpeedL();
+
+	if (execBaseSpeed < 10) {
 		////現在速度が、目標速度より小さい場合、現在速度＋20で動かす
 		//execBaseSpeed = execBaseSpeed + MOTOR_MOVE_UP_VAL;
 		//} else {
 		////現在速度が、目標速度同等なら目標速度で動かす
 		//execBaseSpeed = BaseSpeed;
-	//}
-	int execBaseSpeed = BaseSpeed;
+		Move(10, 1034);
+		_delay_ms(200);
+		Move(20, 1044);
+		_delay_ms(200);
+		Move(40, 1064);
+		_delay_ms(200);
+		Move(80, 1104);
+		_delay_ms(200);
+		Move(160, 1184);
+		_delay_ms(200);
+	}
+	execBaseSpeed = BaseSpeed;
 
 	int leftSpeed = execBaseSpeed;
 	int rightSpeed = (1024 + execBaseSpeed);
