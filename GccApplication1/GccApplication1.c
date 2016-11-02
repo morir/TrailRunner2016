@@ -652,8 +652,8 @@ void stopMoveLessThanVal(int maxVal){
 	int judgeSpeed = 0;
 	while(1) {
 		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
-		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
-		  (judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+		if( (judgeSpeed >= 0 && judgeSpeed <= maxVal) ||
+		  (judgeSpeed >= 1024 && judgeSpeed <= (1024 + maxVal)) ) {
 			//速度がmaxVal以下ならstop()抜ける
 			break;
 		}
@@ -822,8 +822,8 @@ int initLeftTurnAction(int maxVal) {
 		}
 
 		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
-		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
-			(judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+		if( (judgeSpeed >= 0 && judgeSpeed <= maxVal) ||
+			(judgeSpeed >= 1024 && judgeSpeed <= (1024 + maxVal)) ) {
 			//速度がmaxVal以下ならstop()抜ける
 			return TRACE_L_TURN;
 		}
@@ -854,8 +854,8 @@ int initRightTurnAction(int maxVal) {
 		}
 
 		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
-		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
-			(judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+		if( (judgeSpeed >= 0 && judgeSpeed <= maxVal) ||
+			(judgeSpeed >= 1024 && judgeSpeed <= (1024 + maxVal)) ) {
 			//速度がmaxVal以下ならstop()抜ける
 			return TRACE_R_TURN;
 		}
