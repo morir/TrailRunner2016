@@ -197,11 +197,6 @@ void StopMove(void) {
     MotorControl( LEFT_MOTOR, 0 );
 }
 
-void StraightLowMove(void) {
-	MotorControl( RIGHT_MOTOR, 1098 ); //300 P_CCW_SPEED_NOMAL 1632
-	MotorControl( LEFT_MOTOR, 75 ); //300 P_CW_SPEED_NOMAL 609
-}
-
 void StraightMoveRightShift(void) {
     MotorControl( RIGHT_MOTOR, 1473 );//280 P_CCW_SPEED_TURN    1532
     MotorControl( LEFT_MOTOR, 500 );//300 P_CW_SPEED_NOMAL    609
@@ -286,6 +281,11 @@ void StraightMove(void) {
 	int rightSpeed = (1024 + execBaseSpeed);
 
 	Move(leftSpeed, rightSpeed);
+}
+
+void StraightLowMove(void) {
+	MotorControl( RIGHT_MOTOR, 1098 ); //300 P_CCW_SPEED_NOMAL 1632
+	MotorControl( LEFT_MOTOR, 75 ); //300 P_CW_SPEED_NOMAL 609
 }
 
 void LeftStraightMove(void) {
