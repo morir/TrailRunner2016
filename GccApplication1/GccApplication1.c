@@ -744,7 +744,12 @@ int initLeftTurnAction(int maxVal) {
 	int judgeSpeed = 0;
 	while(1) {
 		sensorPattern = getSensorPattern();//センサー値を取得
-		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111 ||
+		sensorPattern == BIT_011110 || sensorPattern == BIT_011111 ||
+		sensorPattern == BIT_001110 || sensorPattern == BIT_001111 ||
+		sensorPattern == BIT_000110 || sensorPattern == BIT_000111 ||
+		sensorPattern == BIT_000010 || sensorPattern == BIT_000011
+		) {
 			//旋回判定後の停止中に黒ラインになったら旋回を止めて、直進する
 			//旋回を止める条件は、センサー値がBIT_XXXX1Xでも良いかな。。。
 			return TRACE_STRAIGHT;
@@ -771,7 +776,12 @@ int initRightTurnAction(int maxVal) {
 	int judgeSpeed = 0;
 	while(1) {
 		sensorPattern = getSensorPattern();//センサー値を取得
-		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111 ||
+		sensorPattern == BIT_111100 || sensorPattern == BIT_111101 ||
+		sensorPattern == BIT_111000 || sensorPattern == BIT_111001 ||
+		sensorPattern == BIT_110000 || sensorPattern == BIT_110001 ||
+		sensorPattern == BIT_100000 || sensorPattern == BIT_100001
+		) {
 			//旋回判定後の停止中に黒ラインになったら旋回を止めて、直進する
 			//旋回を止める条件は、センサー値がBIT_1XXXXXでも良いかな。。。
 			return TRACE_STRAIGHT;
