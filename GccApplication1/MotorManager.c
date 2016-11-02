@@ -247,6 +247,11 @@ void BackMove(void) {
     MotorControl( LEFT_MOTOR, 1273 ); //R250 P_CCW_SPEED_TURN 1532
 }
 
+void BackLowMove(void) {
+	MotorControl( RIGHT_MOTOR, 75 );
+	MotorControl(LEFT_MOTOR, 1098);
+}
+
 void Move(int leftSpeed, int rightSpeed)
 {
 	LOG_INFO("left = %3d, Right = %3d\r\n", leftSpeed, rightSpeed);

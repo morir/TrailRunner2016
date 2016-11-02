@@ -421,13 +421,31 @@ void executeTraceProcess(void) {
 			{
 				//旋回実行
 				currentTraceAction = executeLeftTurn();
-
+				sensorPattern = getSensorPattern();
+				if(sensorPattern == BIT_111110 ) {
+					StraightMove();
+					LED_on(1);
+					LED_on(2);
+					LED_on(3);
+					LED_on(4);
+					LED_on(5);
+					_delay_ms(250);	// 200ms 間隔を空ける
+				}
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
 				//旋回実行
 				currentTraceAction = executeRightTurn();
-
+				sensorPattern = getSensorPattern();
+				if(sensorPattern == BIT_111110 ) {
+					StraightMove();
+					LED_on(1);
+					LED_on(2);
+					LED_on(3);
+					LED_on(4);
+					LED_on(5);
+					_delay_ms(250);	// 200ms 間隔を空ける
+				}
 			}
 
 			Execute(currentTraceAction);
@@ -485,8 +503,8 @@ int getSensorPattern(void) {
 
 	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
 	if (IR[GOAL_JUDGE] >= 700) {
-		//goalCounter++;
-		if (goalCounter >= 30 && 
+		goalCounter++;
+		if (goalCounter >= 6 && 
 			( (IR_BitPattern == BIT_000011 ) ||
 			  (IR_BitPattern == BIT_000111 ) ||
 			  (IR_BitPattern == BIT_001111 ) ||
@@ -542,20 +560,33 @@ void getSensors(void) {
 void executeFinalAction(void)
 {
 	LOG_INFO("executeFinalAction!!\r\n");
+	StopMove();//停止を実行
+	_delay_ms(5000);
 
-	MotorControl( RIGHT_MOTOR, 300 );
-	MotorControl( LEFT_MOTOR, 300 );
-	_delay_ms(900);
-	Execute(MOVE_SELECTION_TYPE_STOP);
-	_delay_ms(100);
+	/* 200度くらい回転 */
+	MotorControl( RIGHT_MOTOR, 75 );
+	MotorControl(LEFT_MOTOR, 75);
+	_delay_ms(1200);
+	StopMove();//停止を実行
+	_delay_ms(10);
 
 	//ペットボトル設置を実行
 	placePETbottles();
 
-	MotorControl( RIGHT_MOTOR, 1623 );
-	MotorControl( LEFT_MOTOR, 600 );
-	_delay_ms(500);
-	Execute(MOVE_SELECTION_TYPE_STOP);
+	/* ゆっくり後進・前進 */
+	BackLowMove();
+	_delay_ms(200);
+	StopMove();//停止を実行
+	_delay_ms(10);
+	StraightLowMove();
+	_delay_ms(200);
+	StopMove();//停止を実行
+	_delay_ms(10);
+
+//	MotorControl( RIGHT_MOTOR, 1623 );
+//	MotorControl( LEFT_MOTOR, 600 );
+//	_delay_ms(500);
+//	Execute(MOVE_SELECTION_TYPE_STOP);
 }
 
 /************************************************************************/

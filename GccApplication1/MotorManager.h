@@ -165,6 +165,7 @@ void TurnMoveLeft(void);
 void TurnLowMoveRight(void);
 void TurnLowMoveLeft(void);
 void BackMove(void);
+void BackLowMove(void);
 void Move(int leftSpeed, int rightSpeed);
 void LeftStraightMove(void);
 void RightStraightMove(void);
