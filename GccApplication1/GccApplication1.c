@@ -40,8 +40,8 @@ void getSensors(void);
 
 void updateAction(int currentAction, int nextAction);
 
-void executeLeftTurn(void);
-void executeRightTurn(void);
+int executeLeftTurn(void);
+int executeRightTurn(void);
 
 void executeFinalAction(void);
 
@@ -601,7 +601,7 @@ void stopMoveLessThanVal(int maxVal){
  * 左旋回実行
  *
  */
-void executeLeftTurn(void){
+int executeLeftTurn(void){
 	int sensorPattern = BIT_000000;
 
 	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
@@ -631,13 +631,14 @@ void executeLeftTurn(void){
 			break;
 		}
 	}
+	return TRACE_STRAIGHT;
 }
 
 /**
  * 右旋回実行
  *
  */
-void executeRightTurn(void){
+int executeRightTurn(void){
 	int sensorPattern = BIT_000000;
 
 	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
@@ -667,163 +668,7 @@ void executeRightTurn(void){
 			break;
 		}
 	}
-}
-
-/**
-* センサー値から次の行動パターンを決定
-* @brief センサー値から次の行動パターンを決定
-* @return メインプログラムのステータス
-* @detail センサー値から次の行動パターンを決定し、戻り値にメインプログラムのステータスを返す。
-*/
-int decideMoveAction(void) {
-    int ret_state = 0;//メインプログラムのステータス
-//	int rightVal = 0;
-//	int leftVal = 0;
-	
-    getSensors();//現在のセンサー値を取得。
-    int currentAction = mCurrentAction;//前回の判定を次の動作判定に使用する
-	
-    int nextAction;
-
-	//前回の判定に応じて分岐する
-    switch (currentAction) {
-    case MOVE_SELECTION_TYPE_START:
-    case MOVE_SELECTION_TYPE_STOP:
-        Execute(currentAction);
-        if (currentAction == MOVE_SELECTION_TYPE_START) {//このif文無くして、中の処理をcase MOVE_SELECTION_TYPE_STARTにすれば良いのでは？
-        	//次は、直進
-            nextAction = MOVE_SELECTION_TYPE_STRAIGHT;
-        } else {
-            nextAction = MOVE_SELECTION_TYPE_START;
-            PID_reset_diff_integral();
-        }
-    	//次の動作判定を、更新(変更)する。
-        updateAction(currentAction, nextAction);
-        break;
-
-	//中央４個のセンサーのどれか１つ以上黒ならここを使ってPID制御を行う
-    case MOVE_SELECTION_TYPE_STRAIGHT:
-    case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
-    case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
-    case MOVE_SELECTION_TYPE_LEFTSIFT_1:
-    case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-        //PID_ctlr_Update(0, PID_ctlr, &rightVal, &leftVal);//PID制御の制御値を更新
-        //setParamMoveAction(rightVal, leftVal);//モーターの駆動指令
-		StraightMove();
-
-        nextAction = getAction();//現在のセンサー値を使って、次の動作を決定
-
-    	//次の動作判定を、更新(変更)する。
-        updateAction(currentAction, nextAction);
-        break;
-
-    //右旋回用の分岐
-    //一度、ここに入ると中央のセンサーが黒になるまでループし続ける。
-    case MOVE_SELECTION_TYPE_RIGHTTURN:
-    case MOVE_SELECTION_TYPE_RIGHTTURN_3:
-        LED_on(1);//LED点灯
-        Execute(MOVE_SELECTION_TYPE_RIGHTTURN);//右の定常旋回実行
-		if (currentAction == MOVE_SELECTION_TYPE_RIGHTTURN) {
-			//右旋回が判定されたら、一定時間旋回を継続させる
-			//前回の判定も考慮して、ウェイト時間を変更すべきかな・・・・
-			_delay_ms(150);//150msのウェイト
-		}
-    	//ループ
-        while(1) {
-            nextAction = getAction();//現在のセンサー値で、次の動作を決める
-			if (nextAction == MOVE_SELECTION_TYPE_STRAIGHT ||
-                nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_1 ||
-                nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_2 ||
-                nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_1 ||
-                nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_2)
-			{
-				//中央４つのセンサーのいずれかが黒なら、以降の処理
-				PID_reset_diff_integral();
-				Execute(MOVE_SELECTION_TYPE_LEFTTURN);//逆回転を実行して、旋回動作のブレーキ。
-				if (currentAction == MOVE_SELECTION_TYPE_RIGHTTURN) {
-					//旋回中から、ここに入ったらブレーキ時間を長い時間にする
-					//直角旋回からの復帰時は、ここに入るはず。
-					_delay_ms(100);
-				} else {
-					//旋回以外から、ここに入ったらブレーキ時間を短い時間にする
-					//斜めのラインの旋回からの復帰時は、ここに入るはず。
-					_delay_ms(50);
-				}
-				Execute(MOVE_SELECTION_TYPE_STRAIGHT);//直進実行
-				updateAction(currentAction, nextAction);//PID制御を使った直進に遷移。
-				break;
-			}
-			else
-			{
-			//旋回中に、中央のセンサーが白ならここ。
-				LED_on(1);
-				Execute(MOVE_SELECTION_TYPE_RIGHTTURN);//右旋回を再実行
-				_delay_ms(10);//10ms旋回を継続
-			}
-        }
-        break;
-        
-    //左旋回用の分岐
-    //一度、ここに入ると中央のセンサーが黒になるまでループし続ける。
-    //右旋回の処理と同じ考えで、回転方向が左旋回。
-    case MOVE_SELECTION_TYPE_LEFTTURN:
-    case MOVE_SELECTION_TYPE_LEFTTURN_3:
-        LED_on(5);
-        Execute(MOVE_SELECTION_TYPE_LEFTTURN);
-		if (currentAction == MOVE_SELECTION_TYPE_LEFTTURN) {
-			_delay_ms(150);
-		}
-        while(1) {
-            nextAction = getAction();
-			if (nextAction == MOVE_SELECTION_TYPE_STRAIGHT ||
-                nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_1 ||
-                nextAction == MOVE_SELECTION_TYPE_LEFTSIFT_2 ||
-                nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_1 ||
-                nextAction == MOVE_SELECTION_TYPE_RIGHTSIFT_2)
-			{
-				PID_reset_diff_integral();
-				Execute(MOVE_SELECTION_TYPE_RIGHTTURN);
-				if (currentAction == MOVE_SELECTION_TYPE_LEFTTURN) {
-					_delay_ms(100);
-				} else {
-					_delay_ms(50);
-				}
-				Execute(MOVE_SELECTION_TYPE_STRAIGHT);
-				updateAction(currentAction, nextAction);
-				break;
-			}
-			else
-			{
-				LED_on(5);
-				Execute(MOVE_SELECTION_TYPE_LEFTTURN);
-				_delay_ms(10);
-			}
-
-        }
-        break;
-
-    //全白ならここ。
-    //2015年のゴール判定用。
-	case MOVE_SELECTION_TYPE_STRAIGHT_2:
-    	//LEDをすべて点灯
-        LED_on(1);
-        LED_on(2);
-        LED_on(3);
-        LED_on(4);
-        LED_on(5);
-        LED_on(6);
-		Execute(currentAction);//前回の判定で、モーターを駆動
-		nextAction = getAction();//現在のセンサー値で、次の動作を判断
-		updateAction(currentAction, nextAction);//次の動作を決定
-		break;
-
-    default:
-        updateAction(0, MOVE_SELECTION_TYPE_STOP);
-        ret_state = 0;
-        break;
-    }
-
-    return ret_state;
+	return TRACE_STRAIGHT;
 }
 
 /**
@@ -843,118 +688,6 @@ void updateAction(int currentAction, int nextAction) {
         mCurrentAction = nextAction;
     }
 }
-
-/**
-* センサー値を参照しアクションを取得する。
-* @brief センサー値を参照しアクションを取得する。
-* @return 戻り値の説明
-*/
-int getAction(void) {
-    int ret = 0;
-    
-	// センサー値を取得
-	getSensors();
-
-	// LEDを設定
-	setLED();
-
-	switch(IR_BitPattern) { 
-	//直進関連
-	case BIT_010100:
-	case BIT_010101:
-	case BIT_110110:
-	case BIT_110111:
-	case BIT_011100:
-	case BIT_011101:
-	case BIT_001000:
-	case BIT_001001:
-		ret = MOVE_SELECTION_TYPE_STRAIGHT;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT\r\n");
-		break;
-	case BIT_000000:
-	case BIT_000001:
-		ret = MOVE_SELECTION_TYPE_STRAIGHT_2;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_STRAIGHT_2\r\n");
-		break;
-	//検索
-	case BIT_111110:
-	case BIT_111111:
-        LED_on(2);
-        LED_on(5);
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_SEARCH\r\n");
-		break;
-	//直進関連（PID制御）
-	case BIT_001100:
-	case BIT_001101:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		PID_ctlr = 1;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;
-	case BIT_000100:
-	case BIT_000101:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_1;
-		PID_ctlr = 3;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;
-	case BIT_000110:
-	case BIT_000111:
-		ret = MOVE_SELECTION_TYPE_RIGHTSIFT_2;
-		PID_ctlr = 5;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;
-	case BIT_011000:
-	case BIT_011001:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		PID_ctlr = -1;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;	
-	case BIT_010000:
-	case BIT_010001:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_1;
-		PID_ctlr = -3;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_1 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;
-	case BIT_110000:
-	case BIT_110001:
-		ret = MOVE_SELECTION_TYPE_LEFTSIFT_2;
-		PID_ctlr = -5;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTSIFT_2 : PID_ctlr[%d]\r\n", PID_ctlr);
-		break;
-	//右旋回関連
-	case BIT_001110:
-	case BIT_001111:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN\r\n");
-		break;
-	case BIT_000010:
-	case BIT_000011:
-		ret = MOVE_SELECTION_TYPE_RIGHTTURN_3;
-		PID_ctlr = 9;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_RIGHTTURN_3\r\n");
-		break;
-	//左旋回関連	
-	case BIT_111000:
-	case BIT_111001:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN\r\n");
-		break;
-	case BIT_100000:
-	case BIT_100001:
-		ret = MOVE_SELECTION_TYPE_LEFTTURN_3;
-		PID_ctlr = -9;
-		LOG_DEBUG("getAction() MOVE_SELECTION_TYPE_LEFTTURN_3\r\n");
-		break;
-	//defaultは検索に設定
-	default:
-		ret = MOVE_SELECTION_TYPE_SEARCH;
-		LOG_DEBUG("getAction() case is default MOVE_SELECTION_TYPE_SEARCH\r\n");
-		break;
-	}
-	
-    return ret;
-}
-
 
 void initEmergencyStop(void) {
     DDRD  = 0x70;
