@@ -40,6 +40,9 @@ void getSensors(void);
 
 void updateAction(int currentAction, int nextAction);
 
+void executeLeftTurn(void);
+void executeRightTurn(void);
+
 void executeFinalAction(void);
 
 void initEmergencyStop(void);
@@ -409,90 +412,25 @@ void executeTraceProcess(void) {
 			if(currentTraceAction == TRACE_L_TURN)
 			{
 				LED_on(1);
-				stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
-
 				//旋回実行
-				LeftTurnMove();
-				while(1) {
-					sensorPattern = getSensorPattern();
-					//旋回動作を抜けるための条件を判定
-					if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001) {
-				LED_on(2);
-						//中央のセンサーが黒なら停止を実行
-						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+				executeLeftTurn();
+				currentTraceAction = TRACE_STRAIGHT;
 
-						//逆旋回を実行：センサーを中央に戻すため
-						RightTurnMove();
-						while(1) {
-							//逆旋回動作を抜けるための条件を判定
-							sensorPattern = getSensorPattern();
-							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-				LED_on(3);
-								stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
-								currentTraceAction = TRACE_STRAIGHT;
-								break;
-							}
-						}
-						break;
-					} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
-						currentTraceAction = TRACE_STRAIGHT;
-						break;
-					}
-				}
+				// LEDを設定
+				setLED();
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
 				LED_on(5);
-				stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 
 				//旋回実行
-				RightTurnMove();
-				while(1) {
-					sensorPattern = getSensorPattern();
-					//旋回動作を抜けるための条件を判定
-					if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101) {
-						LED_on(4);
-						//中央のセンサーが黒なら停止を実行
-						stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+				executeRightTurn();
+				currentTraceAction = TRACE_STRAIGHT;
 
-						//逆旋回を実行：センサーを中央に戻すため
-						LeftTurnMove();
-						while(1) {
-							//逆旋回動作を抜けるための条件を判定
-							sensorPattern = getSensorPattern();
-							if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-								LED_on(3);
-								stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
-								currentTraceAction = TRACE_STRAIGHT;
-								break;
-							}
-						}
-						break;
-					} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
-						currentTraceAction = TRACE_STRAIGHT;
-						break;
-					}
-				}
-
+				// LEDを設定
+				setLED();
 			}
 
-			//左旋回中復帰時の動作
-/* 復帰動作は一旦コメントアウト。動作検証後、変更か削除します。
-			if (previousTraceAction == TRACE_L_TURN && currentTraceAction == TRACE_L_TURN_END) {
-				//RightTurnMove();//逆回転
-				StopMove();
-				_delay_ms(1000);	// 100ms 逆回転を入力（強さと時間は調整必要）
-				currentTraceAction = TRACE_R_ROUND_MIDDLE;
-			}
-			
-			//右旋回中復帰時の動作
-			if (previousTraceAction == TRACE_R_TURN && currentTraceAction == TRACE_R_TURN_END) {
-				//LeftTurnMove();//逆回転
-				StopMove();
-				_delay_ms(1000);	// 100ms 逆回転を入力（強さと時間は調整必要）
-				currentTraceAction = TRACE_L_ROUND_MIDDLE;
-			}
-*/
 			Execute(currentTraceAction);
 /* お試し miyano ここから */
 /* 試して意味なしだったら削除します。
@@ -654,6 +592,78 @@ void stopMoveLessThanVal(int maxVal){
 		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
 		  (judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
 			//速度がmaxVal以下ならstop()抜ける
+			break;
+		}
+	}
+}
+
+/**
+ * 左旋回実行
+ *
+ */
+void executeLeftTurn(void){
+	int sensorPattern = BIT_000000;
+
+	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
+	LeftTurnMove();
+	while(1) {
+		sensorPattern = getSensorPattern();
+		//旋回動作を抜けるための条件を判定
+		if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001) {
+			LED_on(2);
+			//中央のセンサーが黒なら停止を実行
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
+			//逆旋回を実行：センサーを中央に戻すため
+			RightTurnMove();
+			while(1) {
+				//逆旋回動作を抜けるための条件を判定
+				sensorPattern = getSensorPattern();
+				if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+					LED_on(3);
+					stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+					break;
+				}
+			}
+			break;
+		} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+			break;
+		}
+	}
+}
+
+/**
+ * 右旋回実行
+ *
+ */
+void executeRightTurn(void){
+	int sensorPattern = BIT_000000;
+
+	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
+	RightTurnMove();
+	while(1) {
+		sensorPattern = getSensorPattern();
+		//旋回動作を抜けるための条件を判定
+		if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101) {
+			LED_on(4);
+			//中央のセンサーが黒なら停止を実行
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
+			//逆旋回を実行：センサーを中央に戻すため
+			LeftTurnMove();
+			while(1) {
+				//逆旋回動作を抜けるための条件を判定
+				sensorPattern = getSensorPattern();
+				if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+					LED_on(3);
+					stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+					break;
+				}
+			}
+			break;
+			} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
 			break;
 		}
 	}
