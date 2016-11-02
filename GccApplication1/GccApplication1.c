@@ -656,33 +656,32 @@ void getSensors(void) {
 void executeFinalAction(void)
 {
 	LOG_INFO("executeFinalAction!!\r\n");
-	StopMove();//停止を実行
+	StopMove();
 	_delay_ms(5000);
 
-	/* 200度くらい回転 */
-	MotorControl( RIGHT_MOTOR, 75 );
+	/* 200度くらい右回りで回転 */
+	MotorControl(RIGHT_MOTOR, 75);
 	MotorControl(LEFT_MOTOR, 75);
 	_delay_ms(1200);
-	StopMove();//停止を実行
+	StopMove();
 	_delay_ms(10);
 
-	//ペットボトル設置を実行
+	/* ペットボトル設置を実行 */
 	placePETbottles();
-
-	/* ゆっくり後進・前進 */
-	BackLowMove();
-	_delay_ms(200);
-	StopMove();//停止を実行
-	_delay_ms(10);
-	StraightLowMove();
-	_delay_ms(200);
-	StopMove();//停止を実行
 	_delay_ms(10);
 
-//	MotorControl( RIGHT_MOTOR, 1623 );
-//	MotorControl( LEFT_MOTOR, 600 );
-//	_delay_ms(500);
-//	Execute(MOVE_SELECTION_TYPE_STOP);
+	/* ゆっくり後進 */
+	MotorControl(RIGHT_MOTOR, 40);
+	MotorControl(LEFT_MOTOR, 1063);
+	_delay_ms(500);
+	StopMove();//停止を実行
+	_delay_ms(10);
+	
+	/* ゆっくり前進 */
+	MotorControl(RIGHT_MOTOR, 1063);
+	MotorControl(LEFT_MOTOR, 40);
+	_delay_ms(500);
+	StopMove();//停止を実行
 }
 
 /************************************************************************/
