@@ -22,6 +22,7 @@
 #define LINE_STATE_WHITE    1//センサー値でラインが黒判定
 
 #define _LED_ON_
+//#define _MODE_SKIP_			// ショートカットモード
 
 #define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
 #define STOP_JUDGE_MAX_LIMIT	(10)//停止判定の上限値
@@ -50,6 +51,7 @@ int initRightTurnAction(int maxVal);
 void executeFinalAction(void);
 
 void initEmergencyStop(void);
+void executeSkipAction(void);
 
 void setLED(void);
 void LED_on(int i);
@@ -368,7 +370,10 @@ int main(void) {
 	// ロボ動作開始
 
     // ショートカットモードを作る場合はここに入れる。
-    
+#ifdef _MODE_SKIP_
+	executeSkipAction();
+#endif /* _MODE_SKIP_ */
+
 	// トレース動作開始
 	executeTraceProcess();
 
@@ -781,6 +786,58 @@ int initRightTurnAction(int maxVal) {
 	}
 }
 
+/**
+* ショートカットの処理
+* @brief ショートカットの処理
+* @return なし
+*/
+void executeSkipAction(void) {
+	LOG_INFO("***** executeSkipAction START!! *****\r\n");
+
+	static int sensorPattern = BIT_000000;
+
+	// 初期動作（直進）
+	StraightMove();
+	_delay_ms(100);	// 10ms 間隔を空ける
+
+	while (1) {
+
+		// センサ値のビットパターンを取得する。
+		sensorPattern = getSensorPattern();
+
+		// センサ値のパターンが全黒であればループを抜ける。
+		if (sensorPattern == BIT_111111 || sensorPattern == BIT_111110) {
+			break;
+		}
+		_delay_ms(5);// delayTimeの間隔を空ける
+	}
+
+	_delay_ms(5);// delayTimeの間隔を空ける
+
+	// 左旋回
+	LeftTurnMove();
+	_delay_ms(500);	// 500ms 間隔を空ける
+
+	while (1) {
+
+		// センサ値のビットパターンを取得する。
+		sensorPattern = getSensorPattern();
+
+		// センサ値のパターンが真ん中黒であればループを抜ける。
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			break;
+		}
+		_delay_ms(5);// delayTimeの間隔を空ける
+	}
+
+	//左旋回中復帰時の動作
+	RightTurnMove();//逆回転
+	_delay_ms(100);	// 100ms 逆回転を入力（強さと時間は調整必要）
+
+	LOG_INFO("***** executeSkipAction END!! *****\r\n");
+
+	// 通常のライントレースに復帰
+}
 
 /**
  * アクションを更新
