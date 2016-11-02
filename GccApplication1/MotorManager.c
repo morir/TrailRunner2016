@@ -430,6 +430,22 @@ void RightTurnMove(void) {
 	Move(leftSpeed, rightSpeed);
 }
 
+void LeftTurnSlowMove(int rate) {
+	int speed = (BaseSpeed * rate) / 100;
+	int leftSpeed = (1024 + speed);
+	int rightSpeed = (1024 + speed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightTurnSlowMove(int rate) {
+	int speed = (BaseSpeed * rate) / 100;
+	int leftSpeed = speed;
+	int rightSpeed = speed;
+
+	Move(leftSpeed, rightSpeed);
+}
+
 void PrintErrorCode() {
     if(dxl_get_rxpacket_error(ERRBIT_VOLTAGE) == 1)
     LOG_ERROR("Input voltage error!\n");

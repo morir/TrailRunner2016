@@ -25,6 +25,7 @@
 
 #define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
 #define STOP_JUDGE_MAX_LIMIT	(10)//停止判定の上限値
+#define SLOW_TURN_RATE_BY_BASE	(20)//ベースの20%の速さ
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
@@ -42,6 +43,9 @@ void updateAction(int currentAction, int nextAction);
 
 int executeLeftTurn(void);
 int executeRightTurn(void);
+
+int initLeftTurnAction(int maxVal);
+int initRightTurnAction(int maxVal);
 
 void executeFinalAction(void);
 
@@ -411,24 +415,15 @@ void executeTraceProcess(void) {
 
 			if(currentTraceAction == TRACE_L_TURN)
 			{
-				LED_on(1);
 				//旋回実行
-				executeLeftTurn();
-				currentTraceAction = TRACE_STRAIGHT;
+				currentTraceAction = executeLeftTurn();
 
-				// LEDを設定
-				setLED();
 			}
 			else if (currentTraceAction == TRACE_R_TURN)
 			{
-				LED_on(5);
-
 				//旋回実行
-				executeRightTurn();
-				currentTraceAction = TRACE_STRAIGHT;
+				currentTraceAction = executeRightTurn();
 
-				// LEDを設定
-				setLED();
 			}
 
 			Execute(currentTraceAction);
@@ -599,36 +594,66 @@ void stopMoveLessThanVal(int maxVal){
 
 /**
  * 左旋回実行
- *
+ * 旋回動作をさせて、センサーが中央になったら直進を指定して抜ける
  */
 int executeLeftTurn(void){
 	int sensorPattern = BIT_000000;
+	LED_on(1);
 
-	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+	//旋回判定されたら停止を実行
+	int initResult = initLeftTurnAction(STOP_JUDGE_MAX_LIMIT);
+	if (initResult == TRACE_STRAIGHT) {
+		return TRACE_STRAIGHT;
+	}
 
+	//停止が確定したら旋回動作開始
 	LeftTurnMove();
 	while(1) {
 		sensorPattern = getSensorPattern();
 		//旋回動作を抜けるための条件を判定
-		if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001) {
+		if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001 ||
+			sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
+			sensorPattern == BIT_000100 || sensorPattern == BIT_000101
+			) {
 			LED_on(2);
 			//中央のセンサーが黒なら停止を実行
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			break;
+		}
+	}
 
-			//逆旋回を実行：センサーを中央に戻すため
-			RightTurnMove();
-			while(1) {
-				//逆旋回動作を抜けるための条件を判定
-				sensorPattern = getSensorPattern();
-				if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-					LED_on(3);
-					stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
-					break;
-				}
-			}
+	//旋回停止判定後の止まった位置でセンサーが中央なら逆旋回終了
+	sensorPattern = getSensorPattern();
+	if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+		//中央センサーなので、直進に設定して抜ける
+		return TRACE_STRAIGHT;
+	}
+	
+	LED_on(3);
+	//センサーを中央に戻すため遅い旋回を実行
+	RightTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
+	while(1) {
+		//逆旋回動作を抜けるための条件を判定
+		sensorPattern = getSensorPattern();
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			return TRACE_STRAIGHT;
+		} else if ( sensorPattern == BIT_010000 ||	sensorPattern == BIT_010001 ||
+					sensorPattern == BIT_100000 ||	sensorPattern == BIT_100001 ) {
+			//既に逆側まで旋回していたら（想定よりも早く解除できてしまった場合など）
 			break;
-		} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
-			break;
+		}
+	}
+
+	//再度センサーを中央に戻すため遅い旋回を実行（ここまでは実行されない想定）
+	LED_on(4);
+	LeftTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
+	while(1) {
+		//逆旋回動作を抜けるための条件を判定
+		sensorPattern = getSensorPattern();
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			return TRACE_STRAIGHT;
 		}
 	}
 	return TRACE_STRAIGHT;
@@ -636,40 +661,127 @@ int executeLeftTurn(void){
 
 /**
  * 右旋回実行
- *
+ * 旋回動作をさせて、センサーが中央になったら直進を指定して抜ける
  */
 int executeRightTurn(void){
 	int sensorPattern = BIT_000000;
+	LED_on(1);
 
-	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+	int initResult = initRightTurnAction(STOP_JUDGE_MAX_LIMIT);
+	if (initResult == TRACE_STRAIGHT) {
+		return TRACE_STRAIGHT;
+	}
 
+	//停止が確定したら旋回動作開始
 	RightTurnMove();
 	while(1) {
 		sensorPattern = getSensorPattern();
 		//旋回動作を抜けるための条件を判定
-		if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101) {
-			LED_on(4);
+		if (sensorPattern == BIT_000100 || sensorPattern == BIT_000101 ||
+		sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
+		sensorPattern == BIT_010000 || sensorPattern == BIT_010001
+		) {
+			LED_on(2);
 			//中央のセンサーが黒なら停止を実行
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			break;
+		}
+	}
 
-			//逆旋回を実行：センサーを中央に戻すため
-			LeftTurnMove();
-			while(1) {
-				//逆旋回動作を抜けるための条件を判定
-				sensorPattern = getSensorPattern();
-				if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
-					LED_on(3);
-					stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
-					break;
-				}
-			}
+	//旋回停止判定後の止まった位置でセンサーが中央なら逆旋回終了
+	sensorPattern = getSensorPattern();
+	if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+		//中央センサーなので、直進に設定して抜ける
+		return TRACE_STRAIGHT;
+	}
+		
+	LED_on(3);
+	//センサーを中央に戻すため遅い旋回を実行
+	LeftTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
+	while(1) {
+		//逆旋回動作を抜けるための条件を判定
+		sensorPattern = getSensorPattern();
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			return TRACE_STRAIGHT;
+		} else if ( sensorPattern == BIT_010000 ||
+					sensorPattern == BIT_010001 ||
+					sensorPattern == BIT_100000 ||
+					sensorPattern == BIT_100001 ) {
+			//既に逆側まで旋回していたら（想定よりも早く解除できてしまった場合）
 			break;
-			} else if (sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
-			break;
+
+		}
+	}
+		
+	//再度センサーを中央に戻すため遅い旋回を実行（ここまでは実行されない想定）
+	LED_on(4);
+	RightTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
+	while(1) {
+		//逆旋回動作を抜けるための条件を判定
+		sensorPattern = getSensorPattern();
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			return TRACE_STRAIGHT;
 		}
 	}
 	return TRACE_STRAIGHT;
 }
+
+/**
+ * 左旋回動作の初期化
+ * 停止を実行して、途中で全て黒になったら直進モードにする
+ * 基準以下の速度まで減速できたら、旋回を継続する
+ */
+int initLeftTurnAction(int maxVal) {
+	int sensorPattern = BIT_000000;
+
+	StopMove();//停止を実行
+	int judgeSpeed = 0;
+	while(1) {
+		sensorPattern = getSensorPattern();//センサー値を取得
+		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+			//旋回判定後の停止中に黒ラインになったら旋回を止めて、直進する
+			//旋回を止める条件は、センサー値がBIT_XXXX1Xでも良いかな。。。
+			return TRACE_STRAIGHT;
+		}
+
+		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
+		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
+			(judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+			//速度がmaxVal以下ならstop()抜ける
+			return TRACE_L_TURN;
+		}
+	}
+}
+
+/**
+ * 右旋回動作の初期化
+ * 停止を実行して、途中で全て黒になったら直進モードにする
+ * 基準以下の速度まで減速できたら、旋回を継続する
+ */
+int initRightTurnAction(int maxVal) {
+	int sensorPattern = BIT_000000;
+
+	StopMove();//停止を実行
+	int judgeSpeed = 0;
+	while(1) {
+		sensorPattern = getSensorPattern();//センサー値を取得
+		if(sensorPattern == BIT_111110 || sensorPattern == BIT_111111) {
+			//旋回判定後の停止中に黒ラインになったら旋回を止めて、直進する
+			//旋回を止める条件は、センサー値がBIT_1XXXXXでも良いかな。。。
+			return TRACE_STRAIGHT;
+		}
+
+		judgeSpeed = GetCurrentSpeedR();//モーターの速度を取得
+		if( (judgeSpeed >= 0 || judgeSpeed <= maxVal) ||
+			(judgeSpeed >= 1024 || judgeSpeed <= (1024 + maxVal)) ) {
+			//速度がmaxVal以下ならstop()抜ける
+			return TRACE_R_TURN;
+		}
+	}
+}
+
 
 /**
  * アクションを更新

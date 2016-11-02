@@ -174,6 +174,8 @@ void RightMiddleRoundMove(void);
 void RightTightRoundMove(void);
 void LeftTurnMove(void);
 void RightTurnMove(void);
+void LeftTurnSlowMove(int rate);
+void RightTurnSlowMove(int rate);
 void PrintErrorCode(void);
 void PrintCommStatus(int CommStatus);
 
