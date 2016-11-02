@@ -30,6 +30,9 @@
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
+int isRightRound(int action);
+int isLeftRound(int action);
+int isStraightDetected(int sensor);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
 void placePETbottles(void);
@@ -447,6 +450,18 @@ void executeTraceProcess(void) {
 					_delay_ms(250);	// 200ms 間隔を空ける
 				}
 			}
+			else if (isRightRound(previousTraceAction)) {
+				if(isStraightDetected(sensorPattern)) {
+					execute(TRACE_L_ROUND_TIGHT);
+					_delay_ms(100);
+				}
+			}
+			else if (isLeftRound(previousTraceAction)) {
+				if(isStraightDetected(sensorPattern)) {
+					execute(TRACE_R_ROUND_TIGHT);
+					_delay_ms(100);
+				}
+			}
 
 			Execute(currentTraceAction);
 /* お試し miyano ここから */
@@ -482,6 +497,23 @@ void executeTraceProcess(void) {
 		// 今回の動作を前回の動作に退避する。
 		previousTraceAction = currentTraceAction;
 	}
+}
+
+int isRightRound(int action) {
+	return ((action == TRACE_R_ROUND_MIDDLE) ||
+			(action == TRACE_R_ROUND_SOFT) ||
+			(action == TRACE_R_ROUND_TIGHT));
+}
+
+int isLeftRound(int action) {
+	return ((action == TRACE_L_ROUND_MIDDLE) ||
+			(action == TRACE_L_ROUND_SOFT) ||
+			(action == TRACE_L_ROUND_TIGHT));
+}
+
+int isStraightDetected(int sensor) {
+	return ((sensor == BIT_001000) ||
+			(sensor == BIT_001001));
 }
 
 /**
