@@ -387,7 +387,6 @@ void executeTraceProcess(void) {
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
 	int waitMaxCount = 1;
-	int judgeSpeed = 0;
 
 	//初期動作（少しだけ直進）
 	StraightMove();

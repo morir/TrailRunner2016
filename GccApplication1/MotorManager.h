@@ -145,6 +145,8 @@
 #define TRACE_R_TURN_END		14	// 右旋回終了
 #define TRACE_FINALACTION		999	// ゴール動作
 
+#define MOTOR_MOVE_UP_VAL	(20)	//モーターが低速だった場合この値分を付加して駆動させる
+
 // ------------------ Method Definition ------------------
 void MotorInit(void);
 void MotorControl(int id, int power);
