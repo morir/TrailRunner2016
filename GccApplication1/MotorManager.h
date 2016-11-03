@@ -145,9 +145,10 @@
 #define TRACE_R_TURN_END		14	// 右旋回終了
 #define TRACE_FINALACTION		999	// ゴール動作
 
-#define MOTOR_MOVE_UP_VAL	(20)	//モーターが低速だった場合この値分を付加して駆動させる
-#define TURN_SPEED_BASE		(100)	//旋回のベース速度
-#define BASE_SPEED_INIT_VAL	(80)	//ベース速度の初期値
+#define MOTOR_MOVE_UP_VAL		(20)	//モーターが低速だった場合この値分を付加して駆動させる
+#define TURN_SPEED_BASE			(100)	//旋回のベース速度
+#define BASE_SPEED_INIT_VAL		(100)	//ベース速度の初期値
+#define TURN_SPEED_JUDGE_VAL	(400)	//定常旋回する基準速度
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
@@ -179,6 +180,8 @@ void RightMiddleRoundMove(void);
 void RightTightRoundMove(void);
 void LeftTurnMove(void);
 void RightTurnMove(void);
+void LeftTurnByBaseSpeedAdjust(void);
+void RightTurnByBaseSpeedAdjust(void);
 void LeftTurnSlowMove(int rate);
 void RightTurnSlowMove(int rate);
 void PrintErrorCode(void);

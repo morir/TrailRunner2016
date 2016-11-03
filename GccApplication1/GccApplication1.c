@@ -26,14 +26,14 @@
 
 #define DELAY_MAX_TIME      (100)//delay時間の最大値(ミリ秒)
 #define STOP_JUDGE_MAX_LIMIT	(10)//停止判定の上限値
-#define SLOW_TURN_RATE_BY_BASE	(20)//ベースの20%の速さ
+#define SLOW_TURN_RATE_BY_BASE	(50)//ベースの20%の速さ
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
 int isRightRound(int action);
 int isLeftRound(int action);
 int isStraightDetected(int sensor);
-void executeCounterAction(int action);
+int executeCounterAction(int action);
 int doesNeedToResetSpeed(int action);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
@@ -458,14 +458,14 @@ void executeTraceProcess(void) {
 			}
 			else if (isRightRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					executeCounterAction(previousTraceAction);
-					_delay_ms(100);
+					currentTraceAction = executeCounterAction(previousTraceAction);
+//					_delay_ms(100);
 				}
 			}
 			else if (isLeftRound(previousTraceAction)) {
 				if(isStraightDetected(sensorPattern)) {
-					executeCounterAction(previousTraceAction);
-					_delay_ms(100);
+					currentTraceAction = executeCounterAction(previousTraceAction);
+//					_delay_ms(100);
 				}
 			}
 			
@@ -475,8 +475,8 @@ void executeTraceProcess(void) {
 			
 			counter++;
 			// 2秒で速度が200に達するように10msで1インクリメントする
-			if ((counter % 1) == 0) {
-				BaseSpeed = BaseSpeed + 3;
+			if ((counter % 6) == 0) {
+				BaseSpeed = BaseSpeed + 2;
 				counter = 0;
 			}
 
@@ -552,25 +552,32 @@ int isStraightDetected(int sensor) {
  * @param action 現在動作中のカーブ
  * @return 戻り値
  */
-void executeCounterAction(int action) {
+int executeCounterAction(int action) {
 	if(action == TRACE_L_ROUND_SOFT) {
-		Execute(TRACE_R_ROUND_SOFT);
+//		Execute(TRACE_R_ROUND_SOFT);
+		return TRACE_R_ROUND_SOFT;
 	}
 	else if (action == TRACE_L_ROUND_MIDDLE) {
-		Execute(TRACE_R_ROUND_MIDDLE);
+//		Execute(TRACE_R_ROUND_MIDDLE);
+		return TRACE_R_ROUND_MIDDLE;
 	}
 	else if (action == TRACE_L_ROUND_TIGHT) {
-		Execute(TRACE_R_ROUND_TIGHT);
+//		Execute(TRACE_R_ROUND_TIGHT);
+		return TRACE_R_ROUND_TIGHT;
 	}
 	else if(action == TRACE_R_ROUND_SOFT) {
-		Execute(TRACE_L_ROUND_SOFT);
+//		Execute(TRACE_L_ROUND_SOFT);
+		return TRACE_L_ROUND_SOFT;
 	}
 	else if (action == TRACE_R_ROUND_MIDDLE) {
-		Execute(TRACE_L_ROUND_MIDDLE);
+//		Execute(TRACE_L_ROUND_MIDDLE);
+		return TRACE_L_ROUND_MIDDLE;
 	}
 	else if (action == TRACE_R_ROUND_TIGHT) {
-		Execute(TRACE_L_ROUND_TIGHT);
+//		Execute(TRACE_L_ROUND_TIGHT);
+		return TRACE_L_ROUND_TIGHT;
 	}
+	return action;
 }
 
 /**
@@ -602,7 +609,7 @@ int getSensorPattern(void) {
 	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
 	if (IR[GOAL_JUDGE] >= 700) {
 		goalCounter++;
-		if (goalCounter >= 6 && 
+		if (goalCounter >= 100 && 
 			( (IR_BitPattern == BIT_000011 ) ||
 			  (IR_BitPattern == BIT_000111 ) ||
 			  (IR_BitPattern == BIT_001111 ) ||
@@ -640,13 +647,13 @@ void getSensors(void) {
 
     LOG_INFO("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
 	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
-	LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
-				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE_OTHER)?  1 : 0),
-				((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
-				((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[GOAL_JUDGE]	>= COMPARE_VALUE_GOAL)?  1 : 0));
+	//LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
+				//((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE_OTHER)?  1 : 0),
+				//((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				//((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
+				//((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				//((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				//((IR[GOAL_JUDGE]	>= COMPARE_VALUE_GOAL)?  1 : 0));
 	
 }
 
@@ -730,16 +737,16 @@ void stopMoveLessThanVal(int maxVal){
  */
 int executeLeftTurn(void){
 	int sensorPattern = BIT_000000;
-	LED_on(1);
 
 	//旋回判定されたら停止を実行
 	int initResult = initLeftTurnAction(STOP_JUDGE_MAX_LIMIT);
 	if (initResult == TRACE_STRAIGHT) {
 		return TRACE_STRAIGHT;
 	}
+	LED_on(1);
 
 	//停止が確定したら旋回動作開始
-	LeftTurnMove();
+	LeftTurnByBaseSpeedAdjust();
 	while(1) {
 		sensorPattern = getSensorPattern();
 		//旋回動作を抜けるための条件を判定
@@ -798,18 +805,19 @@ int executeLeftTurn(void){
  */
 int executeRightTurn(void){
 	int sensorPattern = BIT_000000;
-	LED_on(1);
 
 	int initResult = initRightTurnAction(STOP_JUDGE_MAX_LIMIT);
 	if (initResult == TRACE_STRAIGHT) {
 		return TRACE_STRAIGHT;
 	}
 
+	LED_on(1);
+
 	//停止が確定したら旋回動作開始
-	RightTurnMove();
+	RightTurnByBaseSpeedAdjust();
 	while(1) {
 		sensorPattern = getSensorPattern();
-		//旋回動作を抜けるための条件を判定
+		//旋回動作を抜けるための条件を判定(＊＊＊＊＊この判定で不足している。旋回抜ける)
 		if (
 		//sensorPattern == BIT_000100 || sensorPattern == BIT_000101 ||
 		sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
@@ -837,6 +845,7 @@ int executeRightTurn(void){
 		sensorPattern = getSensorPattern();
 		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			_delay_ms(5000);
 			return TRACE_STRAIGHT;
 		} else if ( sensorPattern == BIT_010000 ||
 					sensorPattern == BIT_010001 ||

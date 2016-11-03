@@ -13,13 +13,13 @@
 //#define _MOTOR_OFF_
 
 // Speed settings
-#define MAX_SPEED (230)
+#define MAX_SPEED (350)
 
 float HighRate = 0.90;
 float SoftRoundRate = 0.80;
 float MiddleRoundRate = 0.70;
 float TightRoundRate = 0.60;
-float TurnInsideRate = 1.20;
+float TurnInsideRate = 0.50;
 float HalfRate = 0.50;
 
 void MotorInit(void) {
@@ -434,31 +434,65 @@ void RightTightRoundMove(void) {
 }
 
 void LeftTurnMove(void) {
-	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	//int execBaseSpeed = BaseSpeed;
-	//if (GetCurrentSpeedL < 50) {
-	//	execBaseSpeed = ((BaseSpeed * 30) / 100);
-	//} else if (GetCurrentSpeedL < 100) {
-	//	execBaseSpeed = ((BaseSpeed * 60) / 100);
-	//}
 	int speed = TURN_SPEED_BASE;
-	int leftSpeed = (1024 + (speed * TurnInsideRate));
+	int leftSpeed = (1024 + (speed));
 	int rightSpeed = (1024 + speed);
 
 	Move(leftSpeed, rightSpeed);
 }
 
 void RightTurnMove(void) {
-	//現在速度が目標値と離れている場合、ゆっくり回転させる
-	//int execBaseSpeed = BaseSpeed;
-	//if (GetCurrentSpeedL < 50) {
-	//	execBaseSpeed = ((BaseSpeed * 30) / 100);
-	//} else if (GetCurrentSpeedL < 100) {
-	//	execBaseSpeed = ((BaseSpeed * 60) / 100);
-	//}
 	int speed = TURN_SPEED_BASE;
 	int leftSpeed = speed;
-	int rightSpeed = (speed * TurnInsideRate);
+	int rightSpeed = (speed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void LeftTurnByBaseSpeedAdjust(void) {
+	int leftSpeed = TURN_SPEED_BASE;
+	int rightSpeed = TURN_SPEED_BASE;
+	int turnSpeedJudgeVal = (int)(TURN_SPEED_JUDGE_VAL / 10);
+	int baseSpeedVal = (int)((BaseSpeed)/ 10);
+	int turnBaseVal = TURN_SPEED_BASE /10;
+	int turnAdjustVal = (int)(TURN_SPEED_BASE - (((baseSpeedVal * baseSpeedVal * turnBaseVal) / (turnSpeedJudgeVal * turnSpeedJudgeVal)) * 10) );
+	LOG_WARN("BaseSpeed:[%d] turnAdjustVal:[%d]\r\n",BaseSpeed, turnAdjustVal);
+
+	if (turnAdjustVal > 0) {
+		leftSpeed = TURN_SPEED_BASE - turnAdjustVal;
+		rightSpeed = TURN_SPEED_BASE + turnAdjustVal;
+	} else if (turnAdjustVal < 0 ) {
+		leftSpeed = TURN_SPEED_BASE + (TURN_SPEED_BASE + turnAdjustVal);
+		rightSpeed = TURN_SPEED_BASE - (TURN_SPEED_BASE + turnAdjustVal);
+	}
+    LOG_WARN("leftSpeed:[%d] rightSpeed:[%d]\r\n",leftSpeed, rightSpeed);
+	
+	leftSpeed = (1024 + leftSpeed);
+	rightSpeed = (1024 + rightSpeed);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void RightTurnByBaseSpeedAdjust(void) {
+	int leftSpeed = TURN_SPEED_BASE;
+	int rightSpeed = TURN_SPEED_BASE;
+	int turnSpeedJudgeVal = (int)(TURN_SPEED_JUDGE_VAL / 10);
+	int baseSpeedVal = (int)(BaseSpeed / 10);
+	int turnBaseVal = TURN_SPEED_BASE /10;
+	int turnAdjustVal = (int)(TURN_SPEED_BASE - (((baseSpeedVal * baseSpeedVal * turnBaseVal) / (turnSpeedJudgeVal * turnSpeedJudgeVal)) * 10) );
+    LOG_DEBUG("BaseSpeed:[%d] turnAdjustVal:[%d]\r\n",BaseSpeed, turnAdjustVal);
+
+	if (turnAdjustVal > 0) {
+		leftSpeed = TURN_SPEED_BASE + turnAdjustVal;
+		rightSpeed = TURN_SPEED_BASE - turnAdjustVal;
+	} else if (turnAdjustVal < 0 ) {
+		leftSpeed = TURN_SPEED_BASE - (TURN_SPEED_BASE + turnAdjustVal);
+		rightSpeed = TURN_SPEED_BASE + (TURN_SPEED_BASE + turnAdjustVal);
+	}
+    LOG_DEBUG("leftSpeed:[%d] rightSpeed:[%d]\r\n",leftSpeed, rightSpeed);
+	
+	leftSpeed = (leftSpeed);
+	rightSpeed = (rightSpeed);
 
 	Move(leftSpeed, rightSpeed);
 }
