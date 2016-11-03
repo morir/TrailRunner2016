@@ -133,22 +133,28 @@
 #define TRACE_L_ROUND_SOFT		7	// 左カーブ(Soft)
 #define TRACE_L_ROUND_MIDDLE	2	// 左カーブ(Middle)
 #define TRACE_L_ROUND_TIGHT		8	// 左カーブ(Tight)
-#define TRACE_L_TURN_START		11	// 左旋回開始
+#define TRACE_L_TURN_START		111	// 左旋回開始
 #define TRACE_L_TURN			5	// 左旋回
-#define TRACE_L_TURN_END		12	// 左旋回終了
+#define TRACE_L_TURN_END		112	// 左旋回終了
 #define TRACE_R_STRAIGHT		3	// 右前進
 #define TRACE_R_ROUND_SOFT		9	// 右カーブ(Soft)
 #define TRACE_R_ROUND_MIDDLE	4	// 右カーブ(Middle)
 #define TRACE_R_ROUND_TIGHT		10	// 右カーブ(Tight)
-#define TRACE_R_TURN_START		13	// 右旋回開始
+#define TRACE_R_TURN_START		113	// 右旋回開始
 #define TRACE_R_TURN			6	// 右旋回
-#define TRACE_R_TURN_END		14	// 右旋回終了
+#define TRACE_R_TURN_END		114	// 右旋回終了
+#define TRACE_SLOW_STRAIGHT		12	// 直進
 #define TRACE_FINALACTION		999	// ゴール動作
 
+<<<<<<< HEAD
 #define MOTOR_MOVE_UP_VAL		(20)	//モーターが低速だった場合この値分を付加して駆動させる
 #define TURN_SPEED_BASE			(100)	//旋回のベース速度
 #define BASE_SPEED_INIT_VAL		(100)	//ベース速度の初期値
 #define TURN_SPEED_JUDGE_VAL	(400)	//定常旋回する基準速度
+=======
+#define MOTOR_MOVE_UP_VAL	(20)	//モーターが低速だった場合この値分を付加して駆動させる
+#define SLOW_STRAIGHT_VAL	(80)	//モーターが低速だった場合この値分を付加して駆動させる
+>>>>>>> ゆっくり直進追加（ゴールライン通過対策）
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
