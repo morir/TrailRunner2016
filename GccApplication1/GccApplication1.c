@@ -433,7 +433,6 @@ void executeTraceProcess(void) {
 	static int previousTraceAction = TRACE_STRAIGHT;
 	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
-	int waitMaxCount = 1;
     static int counter = 0;
 	
 	//初期動作（少しだけ直進）
@@ -517,32 +516,7 @@ void executeTraceProcess(void) {
 			}
 
 			Execute(currentTraceAction);
-/* お試し miyano ここから */
-/* 試して意味なしだったら削除します。
-			//ステータスの変化間隔が短い場合、delayを大きくして曲げを大きくする
-			//delayの最大値は走行させて検証必要！！！
-			waitMaxCount = DELAY_MAX_TIME/mMoveCount;
-			if (waitMaxCount == 0) {
-				waitMaxCount = 1;
-			}
 
-			//_delay_ms(1)を繰り返して、待ち時間を可変に確保する
-			int waitCount = 0;
-			while(1) {
-				_delay_ms(1);// 1msのdelayTimeの間隔を空ける
-				waitCount++;
-				if (waitCount >= waitMaxCount) {
-					//カウント数に達したら_delay_ms(1)を止める。
-					break;
-				}
-			}
-			
-			mMoveCount = 1;
-		} else {
-			//ステータスが変化するまでの回数をカウント
-			mMoveCount++;
-*/
-/* お試し miyano ここまで */
 //		}
 
 		_delay_ms(1);// delayTimeの間隔を空ける

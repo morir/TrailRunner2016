@@ -456,7 +456,7 @@ void LeftTurnByBaseSpeedAdjust(void) {
 	int baseSpeedVal = (int)((BaseSpeed)/ 10);
 	int turnBaseVal = TURN_SPEED_BASE /10;
 	int turnAdjustVal = (int)(TURN_SPEED_BASE - (((baseSpeedVal * baseSpeedVal * turnBaseVal) / (turnSpeedJudgeVal * turnSpeedJudgeVal)) * 10) );
-	LOG_WARN("BaseSpeed:[%d] turnAdjustVal:[%d]\r\n",BaseSpeed, turnAdjustVal);
+	LOG_DEBUG("BaseSpeed:[%d] turnAdjustVal:[%d]\r\n",BaseSpeed, turnAdjustVal);
 
 	if (turnAdjustVal > 0) {
 		leftSpeed = TURN_SPEED_BASE - turnAdjustVal;
@@ -465,7 +465,7 @@ void LeftTurnByBaseSpeedAdjust(void) {
 		leftSpeed = TURN_SPEED_BASE + (TURN_SPEED_BASE + turnAdjustVal);
 		rightSpeed = TURN_SPEED_BASE - (TURN_SPEED_BASE + turnAdjustVal);
 	}
-    LOG_WARN("leftSpeed:[%d] rightSpeed:[%d]\r\n",leftSpeed, rightSpeed);
+    LOG_DEBUG("leftSpeed:[%d] rightSpeed:[%d]\r\n",leftSpeed, rightSpeed);
 	
 	leftSpeed = (1024 + leftSpeed);
 	rightSpeed = (1024 + rightSpeed);
