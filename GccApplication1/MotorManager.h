@@ -146,15 +146,13 @@
 #define TRACE_SLOW_STRAIGHT		12	// 直進
 #define TRACE_FINALACTION		999	// ゴール動作
 
-<<<<<<< HEAD
 #define MOTOR_MOVE_UP_VAL		(20)	//モーターが低速だった場合この値分を付加して駆動させる
 #define TURN_SPEED_BASE			(100)	//旋回のベース速度
 #define BASE_SPEED_INIT_VAL		(100)	//ベース速度の初期値
 #define TURN_SPEED_JUDGE_VAL	(400)	//定常旋回する基準速度
-=======
+
 #define MOTOR_MOVE_UP_VAL	(20)	//モーターが低速だった場合この値分を付加して駆動させる
 #define SLOW_STRAIGHT_VAL	(80)	//モーターが低速だった場合この値分を付加して駆動させる
->>>>>>> ゆっくり直進追加（ゴールライン通過対策）
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
