@@ -40,12 +40,7 @@ void initPETbottlesMotor(void);
 void placePETbottles(void);
 void stopMoveLessThanVal(int val);
 
-int decideMoveAction(void);
-int getAction(void);
-
 void getSensors(void);
-
-void updateAction(int currentAction, int nextAction);
 
 int executeLeftTurn(void);
 int executeRightTurn(void);
@@ -71,10 +66,10 @@ int serCmd[SERIAL_BUFFER_SIZE] = {0};
 int goalCounter = 0;
 
 // Move State
-int mCurrentAction = MOVE_SELECTION_TYPE_STRAIGHT;
-
-// Next Move State
-int mBeforeMoveState = MOVE_SELECTION_TYPE_STRAIGHT;
+//int mCurrentAction = MOVE_SELECTION_TYPE_STRAIGHT;
+//
+//// Next Move State
+//int mBeforeMoveState = MOVE_SELECTION_TYPE_STRAIGHT;
 
 // IR Sensor 
 unsigned int IR[ADC_PORT_6 + 1] = {0,0,0,0,0,0,0};
@@ -996,24 +991,6 @@ void executeSkipAction(void) {
 	LOG_INFO("***** executeSkipAction END!! *****\r\n");
 
 	// 通常のライントレースに復帰
-}
-
-/**
- * アクションを更新
- * @brief アクションを更新
- * @param (int currentAction) 現在のアクション
- * @param (int nextAction)    次のアクション
- * @return なし
- * @detail 現在実行中のアクション、次のアクションを比較し、差分がある場合のみ実行する。
- */
-void updateAction(int currentAction, int nextAction) {
-	// Next Move Stateを更新
-    mBeforeMoveState = currentAction;
-	
-	// 
-    if (currentAction != nextAction) {
-        mCurrentAction = nextAction;
-    }
 }
 
 void initEmergencyStop(void) {

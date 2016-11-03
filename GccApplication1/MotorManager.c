@@ -82,59 +82,6 @@ void MotorControlJoint(int id, int speed, int position) {
 void Execute(int type) {
 	//type = 0;//DBG
     switch (type) {
-        case MOVE_SELECTION_TYPE_START:
-        case MOVE_SELECTION_TYPE_STRAIGHT:
-		case TRACE_STRAIGHT:
-            LOG_INFO("Straight\r\n");
-            StraightMove();
-            break;
-        case MOVE_SELECTION_TYPE_STOP:
-            LOG_INFO("Stop Move\r\n");
-			StopMove();
-            break;
-        case MOVE_SELECTION_TYPE_RIGHTSIFT_1:
-            LOG_INFO("Right Shift 1\r\n");
-            StraightMoveRightShift();
-            break;
-        case MOVE_SELECTION_TYPE_LEFTSIFT_1:
-            LOG_INFO("Left Shift 1\r\n");
-            StraightMoveLeftShift();
-            break;
-        case MOVE_SELECTION_TYPE_RIGHTSIFT_2:
-            LOG_INFO("Right Shift 2\r\n");
-            StraightMoveRightShift2();
-            break;
-        case MOVE_SELECTION_TYPE_LEFTSIFT_2:
-            LOG_INFO("Left Shift 2\r\n");
-            StraightMoveLeftShift2();
-            break;
-        case MOVE_SELECTION_TYPE_RIGHTTURN:
-            LOG_INFO("Right Turn\r\n");
-            TurnLowMoveRight();
-            break;
-        case MOVE_SELECTION_TYPE_LEFTTURN:
-            LOG_INFO("Left Turn\r\n");
-            TurnLowMoveLeft();
-            break;
-        case MOVE_SELECTION_TYPE_RIGHTTURN_2:
-            LOG_INFO("Right Turn 2\r\n");
-			TurnMoveRight();
-            break;
-        case MOVE_SELECTION_TYPE_LEFTTURN_2:
-            LOG_INFO("Left Turn 2\r\n");
-			TurnMoveLeft();
-            break;
-        case MOVE_SELECTION_TYPE_BACK:
-            LOG_INFO("Back Move\r\n");
-            StopMove();
-            _delay_ms(10);
-            BackMove();
-            _delay_ms(1000);
-            break;
-		case MOVE_SELECTION_TYPE_STRAIGHT_2:
-            LOG_INFO("Straight Low Move\r\n");
-            StraightLowMove();
-            break;
 			
 		case TRACE_L_STRAIGHT:
             LOG_INFO("Left Straight\r\n");
@@ -180,12 +127,6 @@ void Execute(int type) {
             LOG_INFO("Unknown type[%d]\r\n", type);
             break;
     }
-	
-	if(type == MOVE_SELECTION_TYPE_STRAIGHT_2){
-		mCount++;
-	} else {
-		mCount = 0;
-	}
 }
 
 void setParamMoveAction(int right, int left) {
