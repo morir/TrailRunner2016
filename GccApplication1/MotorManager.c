@@ -19,7 +19,7 @@ float HighRate = 0.90;
 float SoftRoundRate = 0.80;
 float MiddleRoundRate = 0.70;
 float TightRoundRate = 0.60;
-float TurnInsideRate = 0.75;
+float TurnInsideRate = 1.20;
 float HalfRate = 0.50;
 
 void MotorInit(void) {
@@ -45,7 +45,7 @@ void MotorInit(void) {
 	
     _delay_ms(500);//1000
 	
-	BaseSpeed = 1;
+	BaseSpeed = BASE_SPEED_INIT_VAL;
 }
 
 void MotorControl(int id, int power) {
@@ -441,9 +441,7 @@ void LeftTurnMove(void) {
 	//} else if (GetCurrentSpeedL < 100) {
 	//	execBaseSpeed = ((BaseSpeed * 60) / 100);
 	//}
-	int execBaseSpeed = (BaseSpeed < MAX_SPEED) ? BaseSpeed : MAX_SPEED;
-
-	int speed = (execBaseSpeed * HalfRate);
+	int speed = TURN_SPEED_BASE;
 	int leftSpeed = (1024 + (speed * TurnInsideRate));
 	int rightSpeed = (1024 + speed);
 
@@ -458,9 +456,7 @@ void RightTurnMove(void) {
 	//} else if (GetCurrentSpeedL < 100) {
 	//	execBaseSpeed = ((BaseSpeed * 60) / 100);
 	//}
-	int execBaseSpeed = (BaseSpeed < MAX_SPEED) ? BaseSpeed : MAX_SPEED;
-
-	int speed = (execBaseSpeed * HalfRate);
+	int speed = TURN_SPEED_BASE;
 	int leftSpeed = speed;
 	int rightSpeed = (speed * TurnInsideRate);
 
@@ -468,7 +464,7 @@ void RightTurnMove(void) {
 }
 
 void LeftTurnSlowMove(int rate) {
-	int speed = (BaseSpeed * rate) / 100;
+	int speed = (TURN_SPEED_BASE * rate) / 100;
 	int leftSpeed = (1024 + speed);
 	int rightSpeed = (1024 + speed);
 
@@ -476,7 +472,7 @@ void LeftTurnSlowMove(int rate) {
 }
 
 void RightTurnSlowMove(int rate) {
-	int speed = (BaseSpeed * rate) / 100;
+	int speed = (TURN_SPEED_BASE * rate) / 100;
 	int leftSpeed = speed;
 	int rightSpeed = speed;
 

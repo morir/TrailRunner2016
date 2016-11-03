@@ -428,6 +428,7 @@ void executeTraceProcess(void) {
 			{
 				//旋回実行
 				currentTraceAction = executeLeftTurn();
+				BaseSpeed = BASE_SPEED_INIT_VAL;
 				sensorPattern = getSensorPattern();
 				if(sensorPattern == BIT_111110 ) {
 					StraightMove();
@@ -443,6 +444,7 @@ void executeTraceProcess(void) {
 			{
 				//旋回実行
 				currentTraceAction = executeRightTurn();
+				BaseSpeed = BASE_SPEED_INIT_VAL;
 				sensorPattern = getSensorPattern();
 				if(sensorPattern == BIT_111110 ) {
 					StraightMove();
@@ -468,13 +470,13 @@ void executeTraceProcess(void) {
 			}
 			
 			if (doesNeedToResetSpeed(currentTraceAction)) {
-				BaseSpeed = 1;
+				BaseSpeed = BASE_SPEED_INIT_VAL;
 			}
 			
 			counter++;
 			// 2秒で速度が200に達するように10msで1インクリメントする
-			if ((counter % 10) == 0) {
-				BaseSpeed++;
+			if ((counter % 1) == 0) {
+				BaseSpeed = BaseSpeed + 3;
 				counter = 0;
 			}
 
@@ -639,12 +641,12 @@ void getSensors(void) {
     LOG_INFO("sensor %3d: %3d: %3d: %3d: %3d: %3d \r\n",
 	       IR[LEFT_OUTSIDE], IR[LEFT_INSIDE], IR[CENTER], IR[RIGHT_INSIDE], IR[RIGHT_OUTSIDE], IR[GOAL_JUDGE]);
 	LOG_DEBUG("IR[R %1d%1d%1d%1d%1d L] GOAL[%1d]\r\n",
-				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
+				((IR[LEFT_OUTSIDE]	>= COMPARE_VALUE_OTHER)?  1 : 0),
 				((IR[LEFT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
 				((IR[CENTER]		>= COMPARE_VALUE)?  1 : 0),
 				((IR[RIGHT_INSIDE]	>= COMPARE_VALUE)?  1 : 0),
 				((IR[RIGHT_OUTSIDE]	>= COMPARE_VALUE)?  1 : 0),
-				((IR[GOAL_JUDGE]	>= COMPARE_VALUE)?  1 : 0));
+				((IR[GOAL_JUDGE]	>= COMPARE_VALUE_GOAL)?  1 : 0));
 	
 }
 
