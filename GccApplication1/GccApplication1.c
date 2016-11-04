@@ -30,11 +30,11 @@
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
-int isRightRound(void);
-int isLeftRound(void);
+int isRightRound(int action);
+int isLeftRound(int action);
 int isStraightDetected(int sensor);
-int getCounterAction(void);
-int doesNeedToResetSpeed(void);
+int executeCounterAction(int action);
+int doesNeedToResetSpeed(int action);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
 void placePETbottles(void);
@@ -53,9 +53,6 @@ void executeFinalAction(void);
 
 void initEmergencyStop(void);
 void executeSkipAction(void);
-
-int getLeftRoundActionDetail(void);
-int getRightRoundActionDetail(void);
 
 void setLED(void);
 void LED_on(int i);
@@ -83,8 +80,6 @@ int IR_BitPattern = 0;
 
 int mMoveCount = 1;
 
-int previousTraceAction = TRACE_STRAIGHT;
-int currentTraceAction = TRACE_STRAIGHT;
 
 // PID Param
 float pGain = 200;   //Proportional Gain
@@ -102,13 +97,13 @@ int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を
 int StraightTable[] = {
 	/* 00:BIT_00000x */	TRACE_STRAIGHT,
 	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
+	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
+	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
 	/* 09:BIT_01001x */	TRACE_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_STRAIGHT,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
@@ -135,15 +130,15 @@ int StraightTable[] = {
 };
 
 int LeftStraightTable[] = {
-	/* 00:BIT_00000x */	TRACE_STRAIGHT,
+	/* 00:BIT_00000x */	TRACE_L_STRAIGHT,
 	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
+	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
+	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
 	/* 09:BIT_01001x */	TRACE_L_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_L_STRAIGHT,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
@@ -172,13 +167,13 @@ int LeftStraightTable[] = {
 int LeftRoundTable[] = {
 	/* 00:BIT_00000x */	TRACE_L_ROUND_MIDDLE,
 	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
+	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_L_ROUND_MIDDLE,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
+	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
 	/* 09:BIT_01001x */	TRACE_L_ROUND_MIDDLE,
 	/* 10:BIT_01010x */	TRACE_L_ROUND_MIDDLE,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
@@ -240,15 +235,15 @@ int LeftTurnTable[] = {
 };
 
 int RightStraightTable[] = {
-	/* 00:BIT_00000x */	TRACE_STRAIGHT,
+	/* 00:BIT_00000x */	TRACE_R_STRAIGHT,
 	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
+	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_L_STRAIGHT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
+	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
 	/* 09:BIT_01001x */	TRACE_R_STRAIGHT,
 	/* 10:BIT_01010x */	TRACE_R_STRAIGHT,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
@@ -277,13 +272,13 @@ int RightStraightTable[] = {
 int RightRoundTable[] = {
 	/* 00:BIT_00000x */	TRACE_R_ROUND_MIDDLE,
 	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
+	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
 	/* 06:BIT_00110x */	TRACE_R_ROUND_SOFT,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
+	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
 	/* 09:BIT_01001x */	TRACE_R_ROUND_MIDDLE,
 	/* 10:BIT_01010x */	TRACE_R_ROUND_MIDDLE,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
@@ -431,6 +426,8 @@ int main(void) {
 * @detail ゴール判定条件を満たすまでライントレース動作を行う。
 */
 void executeTraceProcess(void) {
+	static int previousTraceAction = TRACE_STRAIGHT;
+	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
     static int counter = 0;
 	
@@ -512,14 +509,20 @@ void executeTraceProcess(void) {
 					//_delay_ms(250);	// 200ms 間隔を空ける
 				//}
 			}
-			//else if (isLeftRound() || isRightRound()) {
-				//if (isStraightDetected(sensorPattern)) {
-					//currentTraceAction = getCounterAction();
-////					_delay_ms(100);
-				//}
-			//}
+			else if (isRightRound(previousTraceAction)) {
+				if(isStraightDetected(sensorPattern)) {
+					currentTraceAction = executeCounterAction(previousTraceAction);
+//					_delay_ms(100);
+				}
+			}
+			else if (isLeftRound(previousTraceAction)) {
+				if(isStraightDetected(sensorPattern)) {
+					currentTraceAction = executeCounterAction(previousTraceAction);
+//					_delay_ms(100);
+				}
+			}
 			
-			if (doesNeedToResetSpeed()) {
+			if (doesNeedToResetSpeed(currentTraceAction)) {
 				BaseSpeed = BASE_SPEED_INIT_VAL;
 			}
 			
@@ -550,22 +553,24 @@ void executeTraceProcess(void) {
 
 /**
  * 右カーブ動作中か判定する 
+ * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int isRightRound(void) {
-	return ((previousTraceAction == TRACE_R_ROUND_MIDDLE) ||
-			(previousTraceAction == TRACE_R_ROUND_SOFT) ||
-			(previousTraceAction == TRACE_R_ROUND_TIGHT));
+int isRightRound(int action) {
+	return ((action == TRACE_R_ROUND_MIDDLE) ||
+			(action == TRACE_R_ROUND_SOFT) ||
+			(action == TRACE_R_ROUND_TIGHT));
 }
 
 /**
  * 左カーブ動作中か判定する 
+ * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int isLeftRound(void) {
-	return ((previousTraceAction == TRACE_L_ROUND_MIDDLE) ||
-			(previousTraceAction == TRACE_L_ROUND_SOFT) ||
-			(previousTraceAction == TRACE_L_ROUND_TIGHT));
+int isLeftRound(int action) {
+	return ((action == TRACE_L_ROUND_MIDDLE) ||
+			(action == TRACE_L_ROUND_SOFT) ||
+			(action == TRACE_L_ROUND_TIGHT));
 }
 
 /**
@@ -579,45 +584,44 @@ int isStraightDetected(int sensor) {
 
 /**
  * 動作中のカーブと反対の動作を実行する 
+ * @param action 現在動作中のカーブ
  * @return 戻り値
  */
-int getCounterAction(void) {
-	if(previousTraceAction == TRACE_L_ROUND_SOFT) {
+int executeCounterAction(int action) {
+	if(action == TRACE_L_ROUND_SOFT) {
 //		Execute(TRACE_R_ROUND_SOFT);
 		return TRACE_R_ROUND_SOFT;
 	}
-	else if (previousTraceAction == TRACE_L_ROUND_MIDDLE) {
+	else if (action == TRACE_L_ROUND_MIDDLE) {
 //		Execute(TRACE_R_ROUND_MIDDLE);
 		return TRACE_R_ROUND_MIDDLE;
 	}
-	else if (previousTraceAction == TRACE_L_ROUND_TIGHT) {
+	else if (action == TRACE_L_ROUND_TIGHT) {
 //		Execute(TRACE_R_ROUND_TIGHT);
 		return TRACE_R_ROUND_TIGHT;
 	}
-	else if(previousTraceAction == TRACE_R_ROUND_SOFT) {
+	else if(action == TRACE_R_ROUND_SOFT) {
 //		Execute(TRACE_L_ROUND_SOFT);
 		return TRACE_L_ROUND_SOFT;
 	}
-	else if (previousTraceAction == TRACE_R_ROUND_MIDDLE) {
+	else if (action == TRACE_R_ROUND_MIDDLE) {
 //		Execute(TRACE_L_ROUND_MIDDLE);
 		return TRACE_L_ROUND_MIDDLE;
 	}
-	else if (previousTraceAction == TRACE_R_ROUND_TIGHT) {
+	else if (action == TRACE_R_ROUND_TIGHT) {
 //		Execute(TRACE_L_ROUND_TIGHT);
 		return TRACE_L_ROUND_TIGHT;
 	}
-	
-	// ここには入らないのでありえない動作にしておく。
-	return TRACE_STRAIGHT;
+	return action;
 }
 
 /**
  * 速度をリセットするか判定する 
+ * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int doesNeedToResetSpeed(void) {
-	return ((currentTraceAction == TRACE_L_TURN) ||
-	        (currentTraceAction == TRACE_R_TURN));
+int doesNeedToResetSpeed(int action) {
+	return ((action == TRACE_L_TURN) || (action == TRACE_R_TURN));
 }
 
 /**
@@ -1066,36 +1070,6 @@ void executeSkipAction(void) {
 	LOG_INFO("***** executeSkipAction END!! *****\r\n");
 
 	// 通常のライントレースに復帰
-}
-
-int getLeftRoundActionDetail(void) {
-	if (previousTraceAction == TRACE_L_ROUND_SOFT) {
-		return TRACE_L_STRAIGHT;
-	}
-	else if (previousTraceAction || TRACE_L_ROUND_MIDDLE) {
-		return TRACE_L_ROUND_SOFT;
-	}
-	else if (previousTraceAction == TRACE_L_ROUND_TIGHT) {
-		return TRACE_L_ROUND_MIDDLE;
-	}
-	else {
-		return TRACE_L_ROUND_MIDDLE;
-	}
-}
-
-int getRightRoundActionDetail(void) {
-	if (previousTraceAction == TRACE_R_ROUND_SOFT) {
-		return TRACE_R_STRAIGHT;
-	}
-	else if (previousTraceAction || TRACE_R_ROUND_MIDDLE) {
-		return TRACE_R_ROUND_SOFT;
-	}
-	else if (previousTraceAction == TRACE_R_ROUND_TIGHT) {
-		return TRACE_R_ROUND_MIDDLE;
-	}
-	else {
-		return TRACE_R_ROUND_MIDDLE;
-	}
 }
 
 void initEmergencyStop(void) {
