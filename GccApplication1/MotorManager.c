@@ -13,7 +13,7 @@
 //#define _MOTOR_OFF_
 
 // Speed settings
-#define MAX_SPEED (350)
+#define MAX_SPEED (450)
 
 float HighRate = 0.90;
 float SoftRoundRate = 0.80;
@@ -82,7 +82,10 @@ void MotorControlJoint(int id, int speed, int position) {
 void Execute(int type) {
 	//type = 0;//DBG
     switch (type) {
-			
+		case TRACE_STRAIGHT:
+            LOG_INFO("TRACE_STRAIGHT\r\n");
+			StraightMove();
+            break;
 		case TRACE_L_STRAIGHT:
             LOG_INFO("Left Straight\r\n");
             LeftStraightMove();
@@ -123,6 +126,10 @@ void Execute(int type) {
             LOG_INFO("Right Turn\r\n");
             RightTurnMove();
             break;
+		case TRACE_SLOW_STRAIGHT:
+			LOG_INFO("TRACE_SLOW_STRAIGHT\r\n");
+			StraightLowMove();
+			break;
         default:
             LOG_INFO("Unknown type[%d]\r\n", type);
             break;
@@ -186,11 +193,6 @@ void BackMove(void) {
     MotorControl( LEFT_MOTOR, 1273 ); //R250 P_CCW_SPEED_TURN 1532
 }
 
-void BackLowMove(void) {
-	MotorControl( RIGHT_MOTOR, 75 );
-	MotorControl(LEFT_MOTOR, 1098);
-}
-
 void Move(int leftSpeed, int rightSpeed)
 {
 	//LOG_INFO("left = %3d, Right = %3d\r\n", leftSpeed, rightSpeed);
@@ -218,8 +220,18 @@ void StraightMove(void) {
 }
 
 void StraightLowMove(void) {
-	MotorControl( RIGHT_MOTOR, 1098 ); //300 P_CCW_SPEED_NOMAL 1632
-	MotorControl( LEFT_MOTOR, 75 ); //300 P_CW_SPEED_NOMAL 609
+	int leftSpeed = SLOW_STRAIGHT_VAL;
+	int rightSpeed = (1024 + SLOW_STRAIGHT_VAL);
+
+	Move(leftSpeed, rightSpeed);
+}
+
+void BackLowMove(void) {
+	int leftSpeed = (1024 + SLOW_STRAIGHT_VAL);
+	int rightSpeed = SLOW_STRAIGHT_VAL;
+
+	MotorControl( LEFT_MOTOR, leftSpeed);
+	MotorControl( RIGHT_MOTOR, rightSpeed );
 }
 
 void LeftStraightMove(void) {

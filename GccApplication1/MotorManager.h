@@ -130,7 +130,7 @@
 #define TURN_SPEED_JUDGE_VAL	(400)	//定常旋回する基準速度
 
 #define MOTOR_MOVE_UP_VAL	(20)	//モーターが低速だった場合この値分を付加して駆動させる
-#define SLOW_STRAIGHT_VAL	(80)	//モーターが低速だった場合この値分を付加して駆動させる
+#define SLOW_STRAIGHT_VAL	(120)	//横切るライン通過時の速度
 
 // ------------------ Method Definition ------------------
 void MotorInit(void);
