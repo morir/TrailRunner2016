@@ -33,7 +33,7 @@ void executeTraceProcess(void);
 int isRightRound(void);
 int isLeftRound(void);
 int isStraightDetected(int sensor);
-int executeCounterAction(void);
+int getCounterAction(void);
 int doesNeedToResetSpeed(void);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
@@ -653,7 +653,7 @@ void executeTraceProcess(void) {
 			}
 			else if (isLeftRound() || isRightRound()) {
 				if(isStraightDetected(sensorPattern)) {
-					currentTraceAction = executeCounterAction();
+					currentTraceAction = getCounterAction();
 				}
 			}
 			
@@ -719,7 +719,7 @@ int isStraightDetected(int sensor) {
  * 動作中のカーブと反対の動作を実行する 
  * @return 戻り値
  */
-int executeCounterAction(void) {
+int getCounterAction(void) {
 	if(previousTraceAction == TRACE_L_ROUND_SOFT) {
 		return TRACE_R_ROUND_SOFT;
 	}
