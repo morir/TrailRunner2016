@@ -441,7 +441,7 @@ void executeTraceProcess(void) {
 		sensorPattern = getSensorPattern();
 
 		// センサ値のパターンが最終動作であればループを抜ける。
-		if (sensorPattern == TRACE_FINALACTION) {
+		if (sensorPattern == TRACE_FINALACTION && currentTraceAction == TRACE_SLOW_STRAIGHT) {
 			LED_on(1);
 			LED_on(2);
 			LED_on(3);
@@ -466,9 +466,9 @@ void executeTraceProcess(void) {
 				currentTraceAction = executeLeftTurn();
 				if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
 					StraightMove();
-					_delay_ms(250);	// 200ms 間隔を空ける
+					_delay_ms(300);	// 200ms 間隔を空ける
 					sensorPattern = getSensorPattern();
-					if(sensorPattern != BIT_000000 ) {
+					if(sensorPattern != BIT_000000 && sensorPattern != BIT_111110) {
 						currentTraceAction = TRACE_STRAIGHT;
 					}
 				}
@@ -491,9 +491,9 @@ void executeTraceProcess(void) {
 				currentTraceAction = executeRightTurn();
 				if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
 					StraightMove();
-					_delay_ms(250);	// 200ms 間隔を空ける
+					_delay_ms(300);	// 200ms 間隔を空ける
 					sensorPattern = getSensorPattern();
-					if(sensorPattern != BIT_000000 ) {
+					if(sensorPattern != BIT_000000 && sensorPattern != BIT_111110 ) {
 						currentTraceAction = TRACE_STRAIGHT;
 					}
 				}
@@ -644,7 +644,7 @@ int getSensorPattern(void) {
 	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
 	if (IR[GOAL_JUDGE] >= 700) {
 		goalCounter++;
-		if (goalCounter >= 50 && 
+		if (goalCounter >= 20 && 
 			( (IR_BitPattern == BIT_000011 ) ||
 			  (IR_BitPattern == BIT_000111 ) ||
 			  (IR_BitPattern == BIT_001111 ) ||
@@ -1004,13 +1004,13 @@ void adjustTurnPosition(void) {
 	} else if (BaseSpeed < 350 && BaseSpeed <= 380 ) {
 		StraightLowMove();
 		_delay_ms(50);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 430 && BaseSpeed <= 450 ) {
+	} else if (BaseSpeed < 400 && BaseSpeed <= 430 ) {
 		BackLowMove();
 		_delay_ms(50);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 450 && BaseSpeed <= 480 ) {
+	} else if (BaseSpeed < 430 && BaseSpeed <= 450 ) {
 		BackLowMove();
 		_delay_ms(100);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 480 && BaseSpeed <= 500 ) {
+	} else if (BaseSpeed < 450 && BaseSpeed <= 480 ) {
 		BackLowMove();
 		_delay_ms(200);	// 10ms 間隔を空ける
 	} else if (BaseSpeed < 480 && BaseSpeed <= 500 ) {

@@ -121,7 +121,7 @@
 #define TRACE_R_TURN_START		113	// 右旋回開始
 #define TRACE_R_TURN			6	// 右旋回
 #define TRACE_R_TURN_END		114	// 右旋回終了
-#define TRACE_SLOW_STRAIGHT		12	// 直進
+#define TRACE_SLOW_STRAIGHT		11	// 直進
 #define TRACE_FINALACTION		999	// ゴール動作
 
 #define MOTOR_MOVE_UP_VAL		(20)	//モーターが低速だった場合この値分を付加して駆動させる
