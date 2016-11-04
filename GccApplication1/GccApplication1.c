@@ -30,11 +30,11 @@
 
 // ------------------ Method Definition ------------------
 void executeTraceProcess(void);
-int isRightRound(int action);
-int isLeftRound(int action);
+int isRightRound(void);
+int isLeftRound(void);
 int isStraightDetected(int sensor);
-int executeCounterAction(int action);
-int doesNeedToResetSpeed(int action);
+int executeCounterAction(void);
+int doesNeedToResetSpeed(void);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
 void placePETbottles(void);
@@ -80,6 +80,10 @@ int IR_BitPattern = 0;
 
 int mMoveCount = 1;
 
+// 前回のトレース動作
+int previousTraceAction = TRACE_STRAIGHT;
+// 今回のトレース動作
+int currentTraceAction = TRACE_STRAIGHT;
 
 // PID Param
 float pGain = 200;   //Proportional Gain
@@ -566,8 +570,6 @@ int main(void) {
 * @detail ゴール判定条件を満たすまでライントレース動作を行う。
 */
 void executeTraceProcess(void) {
-	static int previousTraceAction = TRACE_STRAIGHT;
-	static int currentTraceAction = TRACE_STRAIGHT;
 	static int sensorPattern = BIT_000000;
     static int counter = 0;
 	
@@ -649,20 +651,13 @@ void executeTraceProcess(void) {
 					//_delay_ms(250);	// 200ms 間隔を空ける
 				//}
 			}
-			else if (isRightRound(previousTraceAction)) {
+			else if (isLeftRound() || isRightRound()) {
 				if(isStraightDetected(sensorPattern)) {
-					currentTraceAction = executeCounterAction(previousTraceAction);
-//					_delay_ms(100);
-				}
-			}
-			else if (isLeftRound(previousTraceAction)) {
-				if(isStraightDetected(sensorPattern)) {
-					currentTraceAction = executeCounterAction(previousTraceAction);
-//					_delay_ms(100);
+					currentTraceAction = executeCounterAction();
 				}
 			}
 			
-			if (doesNeedToResetSpeed(currentTraceAction)) {
+			if (doesNeedToResetSpeed()) {
 				BaseSpeed = BASE_SPEED_INIT_VAL;
 			}
 			
@@ -693,24 +688,22 @@ void executeTraceProcess(void) {
 
 /**
  * 右カーブ動作中か判定する 
- * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int isRightRound(int action) {
-	return ((action == TRACE_R_ROUND_MIDDLE) ||
-			(action == TRACE_R_ROUND_SOFT) ||
-			(action == TRACE_R_ROUND_TIGHT));
+int isRightRound(void) {
+	return ((previousTraceAction == TRACE_R_ROUND_MIDDLE) ||
+			(previousTraceAction == TRACE_R_ROUND_SOFT) ||
+			(previousTraceAction == TRACE_R_ROUND_TIGHT));
 }
 
 /**
  * 左カーブ動作中か判定する 
- * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int isLeftRound(int action) {
-	return ((action == TRACE_L_ROUND_MIDDLE) ||
-			(action == TRACE_L_ROUND_SOFT) ||
-			(action == TRACE_L_ROUND_TIGHT));
+int isLeftRound(void) {
+	return ((previousTraceAction == TRACE_L_ROUND_MIDDLE) ||
+			(previousTraceAction == TRACE_L_ROUND_SOFT) ||
+			(previousTraceAction == TRACE_L_ROUND_TIGHT));
 }
 
 /**
@@ -724,44 +717,38 @@ int isStraightDetected(int sensor) {
 
 /**
  * 動作中のカーブと反対の動作を実行する 
- * @param action 現在動作中のカーブ
  * @return 戻り値
  */
-int executeCounterAction(int action) {
-	if(action == TRACE_L_ROUND_SOFT) {
-//		Execute(TRACE_R_ROUND_SOFT);
+int executeCounterAction(void) {
+	if(previousTraceAction == TRACE_L_ROUND_SOFT) {
 		return TRACE_R_ROUND_SOFT;
 	}
-	else if (action == TRACE_L_ROUND_MIDDLE) {
-//		Execute(TRACE_R_ROUND_MIDDLE);
+	else if (previousTraceAction == TRACE_L_ROUND_MIDDLE) {
 		return TRACE_R_ROUND_MIDDLE;
 	}
-	else if (action == TRACE_L_ROUND_TIGHT) {
-//		Execute(TRACE_R_ROUND_TIGHT);
+	else if (previousTraceAction == TRACE_L_ROUND_TIGHT) {
 		return TRACE_R_ROUND_TIGHT;
 	}
-	else if(action == TRACE_R_ROUND_SOFT) {
-//		Execute(TRACE_L_ROUND_SOFT);
+	else if(previousTraceAction == TRACE_R_ROUND_SOFT) {
 		return TRACE_L_ROUND_SOFT;
 	}
-	else if (action == TRACE_R_ROUND_MIDDLE) {
-//		Execute(TRACE_L_ROUND_MIDDLE);
+	else if (previousTraceAction == TRACE_R_ROUND_MIDDLE) {
 		return TRACE_L_ROUND_MIDDLE;
 	}
-	else if (action == TRACE_R_ROUND_TIGHT) {
-//		Execute(TRACE_L_ROUND_TIGHT);
+	else if (previousTraceAction == TRACE_R_ROUND_TIGHT) {
 		return TRACE_L_ROUND_TIGHT;
 	}
-	return action;
+	
+	// ここはありえないルートなので直進を返却する。
+	return TRACE_STRAIGHT;
 }
 
 /**
  * 速度をリセットするか判定する 
- * @param action 現在動作中のパターン
  * @return 戻り値
  */
-int doesNeedToResetSpeed(int action) {
-	return ((action == TRACE_L_TURN) || (action == TRACE_R_TURN));
+int doesNeedToResetSpeed(void) {
+	return ((currentTraceAction == TRACE_L_TURN) || (currentTraceAction == TRACE_R_TURN));
 }
 
 /**
