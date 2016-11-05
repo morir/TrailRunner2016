@@ -33,7 +33,9 @@ void executeTraceProcess(void);
 int isRightRound(void);
 int isLeftRound(void);
 int isStraightDetected(int sensor);
-int getCounterAction(void);
+int isLeftInsideDetected(int sensor);
+int isRightInsideDetected(int sensor);
+int isDetectedNothing(int sensor);
 int doesNeedToResetSpeed(void);
 int getSensorPattern(void);
 void initPETbottlesMotor(void);
@@ -44,11 +46,14 @@ void getSensors(void);
 
 int executeLeftTurn(void);
 int executeRightTurn(void);
+void executeRound(void);
+int needChangedSmooth(void);
+int getSmoothAction(void);
 
 int initLeftTurnAction(int maxVal);
 int initRightTurnAction(int maxVal);
 void adjustTurnPosition(void);
-
+void executeDelay(void);
 void executeFinalAction(void);
 
 void initEmergencyStop(void);
@@ -80,6 +85,8 @@ int IR_BitPattern = 0;
 
 int mMoveCount = 1;
 
+// 前々回のトレース動作
+int prePrevTraceAction = TRACE_STRAIGHT;
 // 前回のトレース動作
 int previousTraceAction = TRACE_STRAIGHT;
 // 今回のトレース動作
@@ -98,439 +105,39 @@ int PID_ctlr = 0;	//!< PID制御用変数。中心のセンサからの距離を
 // ------------------ Method ------------------
 
 // ------------------ Table ------------------
-int StraightTable[] = {
+int ActionTable[] = {
 	/* 00:BIT_00000x */	TRACE_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_STRAIGHT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_STRAIGHT,
-	/* 09:BIT_01001x */	TRACE_STRAIGHT,
-	/* 10:BIT_01010x */	TRACE_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_L_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_STRAIGHT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_STRAIGHT,
-	/* 18:BIT_10010x */	TRACE_STRAIGHT,
-	/* 19:BIT_10011x */	TRACE_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_STRAIGHT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_STRAIGHT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_STRAIGHT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT
-};
-
-int LeftStraightTable[] = {
-	/* 00:BIT_00000x */	TRACE_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_STRAIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
-	/* 09:BIT_01001x */	TRACE_L_STRAIGHT,
-	/* 10:BIT_01010x */	TRACE_L_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_L_STRAIGHT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_L_STRAIGHT,
-	/* 18:BIT_10010x */	TRACE_L_STRAIGHT,
-	/* 19:BIT_10011x */	TRACE_L_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_L_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_L_STRAIGHT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_L_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_L_STRAIGHT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_L_STRAIGHT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int LeftRoundSofTable[] = {
-	/* 00:BIT_00000x */	TRACE_L_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_L_ROUND_SOFT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
-	/* 09:BIT_01001x */	TRACE_L_ROUND_SOFT,
-	/* 10:BIT_01010x */	TRACE_L_ROUND_SOFT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_L_ROUND_SOFT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_L_ROUND_SOFT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_L_ROUND_SOFT,
-	/* 18:BIT_10010x */	TRACE_L_ROUND_SOFT,
-	/* 19:BIT_10011x */	TRACE_L_ROUND_SOFT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_L_ROUND_SOFT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_L_ROUND_SOFT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_L_ROUND_SOFT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_L_ROUND_SOFT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_L_ROUND_SOFT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int LeftRoundMiddleTable[] = {
-	/* 00:BIT_00000x */	TRACE_L_ROUND_SOFT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
+	/* 01:BIT_00001x */	TRACE_R_ROUND_MIDDLE,
 	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
 	/* 03:BIT_00011x */	TRACE_R_TURN,
 	/* 04:BIT_00100x */	TRACE_STRAIGHT,
 	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_L_ROUND_MIDDLE,
+	/* 06:BIT_00110x */	TRACE_R_ROUND_MIDDLE,
 	/* 07:BIT_00111x */	TRACE_R_TURN,
 	/* 08:BIT_01000x */	TRACE_L_ROUND_MIDDLE,
 	/* 09:BIT_01001x */	TRACE_L_ROUND_MIDDLE,
-	/* 10:BIT_01010x */	TRACE_L_ROUND_MIDDLE,
+	/* 10:BIT_01010x */	TRACE_STRAIGHT,
 	/* 11:BIT_01011x */	TRACE_R_TURN,
 	/* 12:BIT_01100x */	TRACE_L_ROUND_MIDDLE,
 	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_L_ROUND_MIDDLE,
+	/* 14:BIT_01110x */	TRACE_STRAIGHT,
 	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_L_ROUND_MIDDLE,
+	/* 16:BIT_10000x */	TRACE_L_ROUND_MIDDLE,
+	/* 17:BIT_10001x */	TRACE_STRAIGHT,
 	/* 18:BIT_10010x */	TRACE_L_ROUND_MIDDLE,
-	/* 19:BIT_10011x */	TRACE_L_ROUND_MIDDLE,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_L_ROUND_MIDDLE,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_L_ROUND_MIDDLE,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_L_ROUND_MIDDLE,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_L_ROUND_MIDDLE,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_L_ROUND_MIDDLE,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int LeftRoundTightTable[] = {
-	/* 00:BIT_00000x */	TRACE_L_ROUND_MIDDLE,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_TIGHT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_L_ROUND_TIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_TIGHT,
-	/* 09:BIT_01001x */	TRACE_L_ROUND_TIGHT,
-	/* 10:BIT_01010x */	TRACE_L_ROUND_TIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_L_ROUND_SOFT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_L_ROUND_TIGHT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_L_ROUND_TIGHT,
-	/* 18:BIT_10010x */	TRACE_L_ROUND_TIGHT,
-	/* 19:BIT_10011x */	TRACE_L_ROUND_TIGHT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_L_ROUND_TIGHT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_L_ROUND_TIGHT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_L_ROUND_TIGHT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_L_ROUND_TIGHT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_L_ROUND_TIGHT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int LeftTurnTable[] = {
-	/* 00:BIT_00000x */	TRACE_L_TURN,
-	/* 01:BIT_00001x */	TRACE_L_TURN,
-	/* 02:BIT_00010x */	TRACE_L_TURN,
-	/* 03:BIT_00011x */	TRACE_L_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_L_TURN,
-	/* 06:BIT_00110x */	TRACE_L_TURN,
-	/* 07:BIT_00111x */	TRACE_L_TURN,
-	/* 08:BIT_01000x */	TRACE_L_TURN,
-	/* 09:BIT_01001x */	TRACE_L_TURN,
-	/* 10:BIT_01010x */	TRACE_L_TURN,
-	/* 11:BIT_01011x */	TRACE_L_TURN,
-	/* 12:BIT_01100x */	TRACE_L_TURN,
-	/* 13:BIT_01101x */	TRACE_L_TURN,
-	/* 14:BIT_01110x */	TRACE_L_TURN,
-	/* 15:BIT_01111x */	TRACE_L_TURN,
-	/* 16:BIT_10000x */	TRACE_L_TURN,
-	/* 17:BIT_10001x */	TRACE_L_TURN,
-	/* 18:BIT_10010x */	TRACE_L_TURN,
-	/* 19:BIT_10011x */	TRACE_L_TURN,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_L_TURN,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_L_TURN,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_L_TURN,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_L_TURN,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_L_TURN,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int RightStraightTable[] = {
-	/* 00:BIT_00000x */	TRACE_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_L_STRAIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
-	/* 09:BIT_01001x */	TRACE_R_STRAIGHT,
-	/* 10:BIT_01010x */	TRACE_R_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_R_STRAIGHT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_R_STRAIGHT,
-	/* 18:BIT_10010x */	TRACE_R_STRAIGHT,
-	/* 19:BIT_10011x */	TRACE_R_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_R_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_R_STRAIGHT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_R_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_R_STRAIGHT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_R_STRAIGHT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int RightRoundSoftTable[] = {
-	/* 00:BIT_00000x */	TRACE_R_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_ROUND_SOFT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
-	/* 09:BIT_01001x */	TRACE_R_ROUND_SOFT,
-	/* 10:BIT_01010x */	TRACE_R_ROUND_SOFT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_ROUND_SOFT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_R_ROUND_SOFT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_R_ROUND_SOFT,
-	/* 18:BIT_10010x */	TRACE_R_ROUND_SOFT,
-	/* 19:BIT_10011x */	TRACE_R_ROUND_SOFT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_R_ROUND_SOFT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_R_ROUND_SOFT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_R_ROUND_SOFT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_R_ROUND_SOFT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_R_ROUND_SOFT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int RightRoundMiddleTable[] = {
-	/* 00:BIT_00000x */	TRACE_R_ROUND_SOFT,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_MIDDLE,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_ROUND_TIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_TIGHT,
-	/* 09:BIT_01001x */	TRACE_R_ROUND_TIGHT,
-	/* 10:BIT_01010x */	TRACE_R_ROUND_TIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_ROUND_MIDDLE,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_R_ROUND_MIDDLE,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_R_ROUND_MIDDLE,
-	/* 18:BIT_10010x */	TRACE_R_ROUND_MIDDLE,
 	/* 19:BIT_10011x */	TRACE_R_ROUND_MIDDLE,
 	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_R_ROUND_MIDDLE,
+	/* 21:BIT_10101x */	TRACE_STRAIGHT,
 	/* 22:BIT_10110x */	TRACE_L_TURN,
 	/* 23:BIT_10111x */	TRACE_R_ROUND_MIDDLE,
 	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_R_ROUND_MIDDLE,
+	/* 25:BIT_11001x */	TRACE_L_ROUND_MIDDLE,
 	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_R_ROUND_MIDDLE,
+	/* 27:BIT_11011x */	TRACE_STRAIGHT,
 	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_R_ROUND_MIDDLE,
+	/* 29:BIT_11101x */	TRACE_L_ROUND_MIDDLE,
 	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int RightRoundTightTable[] = {
-	/* 00:BIT_00000x */	TRACE_R_ROUND_MIDDLE,
-	/* 01:BIT_00001x */	TRACE_R_ROUND_TIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_TIGHT,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_ROUND_TIGHT,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_TIGHT,
-	/* 09:BIT_01001x */	TRACE_R_ROUND_TIGHT,
-	/* 10:BIT_01010x */	TRACE_R_ROUND_TIGHT,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_ROUND_TIGHT,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_R_ROUND_TIGHT,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_L_ROUND_TIGHT,
-	/* 17:BIT_10001x */	TRACE_R_ROUND_TIGHT,
-	/* 18:BIT_10010x */	TRACE_R_ROUND_TIGHT,
-	/* 19:BIT_10011x */	TRACE_R_ROUND_TIGHT,
-	/* 20:BIT_10100x */	TRACE_L_TURN,
-	/* 21:BIT_10101x */	TRACE_R_ROUND_TIGHT,
-	/* 22:BIT_10110x */	TRACE_L_TURN,
-	/* 23:BIT_10111x */	TRACE_R_ROUND_TIGHT,
-	/* 24:BIT_11000x */	TRACE_L_TURN,
-	/* 25:BIT_11001x */	TRACE_R_ROUND_TIGHT,
-	/* 26:BIT_11010x */	TRACE_L_TURN,
-	/* 27:BIT_11011x */	TRACE_R_ROUND_TIGHT,
-	/* 28:BIT_11100x */	TRACE_L_TURN,
-	/* 29:BIT_11101x */	TRACE_R_ROUND_TIGHT,
-	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT,
-};
-
-int RightTurnTable[] = {
-	/* 00:BIT_00000x */	TRACE_R_TURN,
-	/* 01:BIT_00001x */	TRACE_R_TURN,
-	/* 02:BIT_00010x */	TRACE_R_TURN,
-	/* 03:BIT_00011x */	TRACE_R_TURN,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_R_TURN,
-	/* 06:BIT_00110x */	TRACE_R_TURN,
-	/* 07:BIT_00111x */	TRACE_R_TURN,
-	/* 08:BIT_01000x */	TRACE_R_TURN,
-	/* 09:BIT_01001x */	TRACE_R_TURN,
-	/* 10:BIT_01010x */	TRACE_R_TURN,
-	/* 11:BIT_01011x */	TRACE_R_TURN,
-	/* 12:BIT_01100x */	TRACE_R_TURN,
-	/* 13:BIT_01101x */	TRACE_R_TURN,
-	/* 14:BIT_01110x */	TRACE_R_TURN,
-	/* 15:BIT_01111x */	TRACE_R_TURN,
-	/* 16:BIT_10000x */	TRACE_R_TURN,
-	/* 17:BIT_10001x */	TRACE_R_TURN,
-	/* 18:BIT_10010x */	TRACE_R_TURN,
-	/* 19:BIT_10011x */	TRACE_R_TURN,
-	/* 20:BIT_10100x */	TRACE_R_TURN,
-	/* 21:BIT_10101x */	TRACE_R_TURN,
-	/* 22:BIT_10110x */	TRACE_R_TURN,
-	/* 23:BIT_10111x */	TRACE_R_TURN,
-	/* 24:BIT_11000x */	TRACE_R_TURN,
-	/* 25:BIT_11001x */	TRACE_R_TURN,
-	/* 26:BIT_11010x */	TRACE_R_TURN,
-	/* 27:BIT_11011x */	TRACE_R_TURN,
-	/* 28:BIT_11100x */	TRACE_R_TURN,
-	/* 29:BIT_11101x */	TRACE_R_TURN,
-	/* 30:BIT_11110x */	TRACE_R_TURN,
 	/* 31:BIT_11111x */	TRACE_STRAIGHT
-};
-
-int SlowStraightTable[] = {
-	/* 00:BIT_00000x */	TRACE_SLOW_STRAIGHT,
-	/* 01:BIT_00001x */	TRACE_SLOW_STRAIGHT,
-	/* 02:BIT_00010x */	TRACE_R_ROUND_SOFT,
-	/* 03:BIT_00011x */	TRACE_SLOW_STRAIGHT,
-	/* 04:BIT_00100x */	TRACE_STRAIGHT,
-	/* 05:BIT_00101x */	TRACE_SLOW_STRAIGHT,
-	/* 06:BIT_00110x */	TRACE_SLOW_STRAIGHT,
-	/* 07:BIT_00111x */	TRACE_SLOW_STRAIGHT,
-	/* 08:BIT_01000x */	TRACE_L_ROUND_SOFT,
-	/* 09:BIT_01001x */	TRACE_SLOW_STRAIGHT,
-	/* 10:BIT_01010x */	TRACE_SLOW_STRAIGHT,
-	/* 11:BIT_01011x */	TRACE_SLOW_STRAIGHT,
-	/* 12:BIT_01100x */	TRACE_SLOW_STRAIGHT,
-	/* 13:BIT_01101x */	TRACE_SLOW_STRAIGHT,
-	/* 14:BIT_01110x */	TRACE_SLOW_STRAIGHT,
-	/* 15:BIT_01111x */	TRACE_SLOW_STRAIGHT,
-	/* 16:BIT_10000x */	TRACE_SLOW_STRAIGHT,
-	/* 17:BIT_10001x */	TRACE_SLOW_STRAIGHT,
-	/* 18:BIT_10010x */	TRACE_SLOW_STRAIGHT,
-	/* 19:BIT_10011x */	TRACE_SLOW_STRAIGHT,
-	/* 20:BIT_10100x */	TRACE_SLOW_STRAIGHT,
-	/* 21:BIT_10101x */	TRACE_SLOW_STRAIGHT,
-	/* 22:BIT_10110x */	TRACE_SLOW_STRAIGHT,
-	/* 23:BIT_10111x */	TRACE_SLOW_STRAIGHT,
-	/* 24:BIT_11000x */	TRACE_SLOW_STRAIGHT,
-	/* 25:BIT_11001x */	TRACE_SLOW_STRAIGHT,
-	/* 26:BIT_11010x */	TRACE_SLOW_STRAIGHT,
-	/* 27:BIT_11011x */	TRACE_SLOW_STRAIGHT,
-	/* 28:BIT_11100x */	TRACE_SLOW_STRAIGHT,
-	/* 29:BIT_11101x */	TRACE_SLOW_STRAIGHT,
-	/* 30:BIT_11110x */	TRACE_SLOW_STRAIGHT,
-	/* 31:BIT_11111x */	TRACE_SLOW_STRAIGHT
-};
-
-int *MatrixTable[] = {
-	StraightTable,
-	LeftStraightTable,
-	LeftRoundMiddleTable,
-	RightStraightTable,
-	RightRoundMiddleTable,
-	LeftTurnTable,
-	RightTurnTable,
-	LeftRoundSofTable,
-	LeftRoundTightTable,
-	RightRoundSoftTable,
-	RightRoundTightTable,
-	SlowStraightTable
 };
 
 /**
@@ -592,96 +199,91 @@ void executeTraceProcess(void) {
 			break;
 		}
 
-		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を決定する。
-		currentTraceAction = MatrixTable[previousTraceAction][(sensorPattern / 2)];
+		// 前回の動作とセンサ値のパターンの組み合わせから今回の動作を仮決定する。
+		currentTraceAction = ActionTable[(sensorPattern / 2)];
 //		LOG_INFO("(sensorPattern / 2) %3d\r\n", (sensorPattern / 2));
 //		LOG_INFO("previousTraceAction %3d: sensorPattern %3d: currentTraceAction: %3d \r\n",
 //		         previousTraceAction, sensorPattern, currentTraceAction);
-//		if(currentTraceAction != previousTraceAction)
-//		{
-			// LEDを設定
-			setLED();
 
-			if(currentTraceAction == TRACE_L_TURN)
-			{
-				//旋回実行
-				currentTraceAction = executeLeftTurn();
-				if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
-					StraightMove();
-					_delay_ms(250);	// 200ms 間隔を空ける
-					sensorPattern = getSensorPattern();
-					if(sensorPattern != BIT_000000 ) {
-						currentTraceAction = TRACE_STRAIGHT;
-					}
-				}
+		// LEDを設定
+		setLED();
 
-				BaseSpeed = BASE_SPEED_INIT_VAL;
-				//sensorPattern = getSensorPattern();
-				//if(sensorPattern == BIT_111110 ) {
-					//StraightMove();
-					//LED_on(1);
-					//LED_on(2);
-					//LED_on(3);
-					//LED_on(4);
-					//LED_on(5);
-					//_delay_ms(250);	// 200ms 間隔を空ける
-				//}
-			}
-			else if (currentTraceAction == TRACE_R_TURN)
-			{
-				//旋回実行
-				currentTraceAction = executeRightTurn();
-				if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
-					StraightMove();
-					_delay_ms(250);	// 200ms 間隔を空ける
-					sensorPattern = getSensorPattern();
-					if(sensorPattern != BIT_000000 ) {
-						currentTraceAction = TRACE_STRAIGHT;
-					}
-				}
-				BaseSpeed = BASE_SPEED_INIT_VAL;
+		if(currentTraceAction == TRACE_L_TURN)
+		{
+			//旋回実行
+			currentTraceAction = executeLeftTurn();
+			if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
+				StraightMove();
+				executeDelay();
 				sensorPattern = getSensorPattern();
-				//if(sensorPattern == BIT_111110 ) {
-					//StraightMove();
-					//LED_on(1);
-					//LED_on(2);
-					//LED_on(3);
-					//LED_on(4);
-					//LED_on(5);
-					//_delay_ms(250);	// 200ms 間隔を空ける
-				//}
-			}
-			else if (isLeftRound() || isRightRound()) {
-				if(isStraightDetected(sensorPattern)) {
-					currentTraceAction = getCounterAction();
+				if(sensorPattern != BIT_000000 ) {
+					currentTraceAction = TRACE_STRAIGHT;
 				}
 			}
-			
-			if (doesNeedToResetSpeed()) {
-				BaseSpeed = BASE_SPEED_INIT_VAL;
+
+			BaseSpeed = BASE_SPEED_INIT_VAL;
+			//sensorPattern = getSensorPattern();
+			//if(sensorPattern == BIT_111110 ) {
+				//StraightMove();
+				//LED_on(1);
+				//LED_on(2);
+				//LED_on(3);
+				//LED_on(4);
+				//LED_on(5);
+				//_delay_ms(250);	// 200ms 間隔を空ける
+			//}
+		}
+		else if (currentTraceAction == TRACE_R_TURN)
+		{
+			//旋回実行
+			currentTraceAction = executeRightTurn();
+			if (currentTraceAction == TRACE_SLOW_STRAIGHT) {
+				StraightMove();
+				executeDelay();
+				sensorPattern = getSensorPattern();
+				if(sensorPattern != BIT_000000 ) {
+					currentTraceAction = TRACE_STRAIGHT;
+				}
 			}
+			BaseSpeed = BASE_SPEED_INIT_VAL;
+			sensorPattern = getSensorPattern();
+			//if(sensorPattern == BIT_111110 ) {
+				//StraightMove();
+				//LED_on(1);
+				//LED_on(2);
+				//LED_on(3);
+				//LED_on(4);
+				//LED_on(5);
+				//_delay_ms(250);	// 200ms 間隔を空ける
+			//}
+		}
+		else if (isLeftRound() || isRightRound()) {
+			executeRound();
+		}
 			
-			counter++;
-			// 2秒で速度が200に達するように10msで1インクリメントする
+		if (doesNeedToResetSpeed()) {
+			BaseSpeed = BASE_SPEED_INIT_VAL;
+		}
+			
+		counter++;
 #ifdef LOG_INFO_ON
-			if ((counter % 1) == 0) {
-				BaseSpeed = BaseSpeed + 1;
-				counter = 0;
-			}
+		if ((counter % 1) == 0) {
+			BaseSpeed = BaseSpeed + 1;
+			counter = 0;
+		}
 #else
-			if ((counter % 6) == 0) {
-				BaseSpeed = BaseSpeed + 2;
-				counter = 0;
-			}
+		if ((counter % 5) == 0) {
+			BaseSpeed = BaseSpeed + 2;
+			counter = 0;
+		}
 #endif /* _MODE_SKIP_ */
 
-			Execute(currentTraceAction);
-
-//		}
+		Execute(currentTraceAction);
 
 		_delay_ms(1);// delayTimeの間隔を空ける
 
 		// 今回の動作を前回の動作に退避する。
+		prePrevTraceAction = previousTraceAction;
 		previousTraceAction = currentTraceAction;
 	}
 }
@@ -691,8 +293,9 @@ void executeTraceProcess(void) {
  * @return 戻り値
  */
 int isRightRound(void) {
-	return ((previousTraceAction == TRACE_R_ROUND_MIDDLE) ||
+	return ((previousTraceAction == TRACE_R_STRAIGHT) ||
 			(previousTraceAction == TRACE_R_ROUND_SOFT) ||
+			(previousTraceAction == TRACE_R_ROUND_MIDDLE) ||
 			(previousTraceAction == TRACE_R_ROUND_TIGHT));
 }
 
@@ -701,8 +304,9 @@ int isRightRound(void) {
  * @return 戻り値
  */
 int isLeftRound(void) {
-	return ((previousTraceAction == TRACE_L_ROUND_MIDDLE) ||
+	return ((previousTraceAction == TRACE_L_STRAIGHT) ||
 			(previousTraceAction == TRACE_L_ROUND_SOFT) ||
+			(previousTraceAction == TRACE_L_ROUND_MIDDLE) ||
 			(previousTraceAction == TRACE_L_ROUND_TIGHT));
 }
 
@@ -716,31 +320,30 @@ int isStraightDetected(int sensor) {
 }
 
 /**
- * 動作中のカーブと反対の動作を実行する 
+ * 左内側のセンサでラインを検出したか判定する 
+ * @param sensor センサの検出パターン
  * @return 戻り値
  */
-int getCounterAction(void) {
-	if(previousTraceAction == TRACE_L_ROUND_SOFT) {
-		return TRACE_R_ROUND_SOFT;
-	}
-	else if (previousTraceAction == TRACE_L_ROUND_MIDDLE) {
-		return TRACE_R_ROUND_MIDDLE;
-	}
-	else if (previousTraceAction == TRACE_L_ROUND_TIGHT) {
-		return TRACE_R_ROUND_TIGHT;
-	}
-	else if(previousTraceAction == TRACE_R_ROUND_SOFT) {
-		return TRACE_L_ROUND_SOFT;
-	}
-	else if (previousTraceAction == TRACE_R_ROUND_MIDDLE) {
-		return TRACE_L_ROUND_MIDDLE;
-	}
-	else if (previousTraceAction == TRACE_R_ROUND_TIGHT) {
-		return TRACE_L_ROUND_TIGHT;
-	}
-	
-	// ここはありえないルートなので直進を返却する。
-	return TRACE_STRAIGHT;
+int isLeftInsideDetected(int sensor) {
+	return ((sensor == BIT_010000) || (sensor == BIT_010001));
+}
+
+/**
+ * 右内側のセンサでラインを検出したか判定する 
+ * @param sensor センサの検出パターン
+ * @return 戻り値
+ */
+int isRightInsideDetected(int sensor) {
+	return ((sensor == BIT_000100) || (sensor == BIT_000101));
+}
+
+/**
+ * センサでラインが未検出か判定する 
+ * @param sensor センサの検出パターン
+ * @return 戻り値
+ */
+int isDetectedNothing(int sensor) {
+	return ((sensor == BIT_000000) || (sensor == BIT_000001));
 }
 
 /**
@@ -1052,6 +655,126 @@ int executeRightTurn(void){
 }
 
 /**
+ * カーブ実行
+ */
+void executeRound(void){
+	static int sensorPattern = BIT_000000;
+	
+	while (1) {
+		// 直進または旋回検知時は処理終了
+		if ((currentTraceAction == TRACE_STRAIGHT) ||
+			(currentTraceAction == TRACE_L_TURN) ||
+			(currentTraceAction == TRACE_R_TURN)) {
+				break;
+		}
+		
+		// センサ値のビットパターンを取得する。
+		sensorPattern = getSensorPattern();
+		if (isDetectedNothing(sensorPattern)) {
+			// センサ未検知の場合はラインがセンサの狭間にある場合なので、
+			// トレースがなるべく直進に収束するようにトレース動作を調整する。
+			if (needChangedSmooth()) {
+				currentTraceAction = getSmoothAction();
+			} 
+			
+			Execute(currentTraceAction);
+			prePrevTraceAction = previousTraceAction;
+			previousTraceAction = currentTraceAction;
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+int needChangedSmooth(void) {
+	if (prePrevTraceAction == TRACE_L_ROUND_SOFT) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_L_STRAIGHT));
+	}
+	else if (prePrevTraceAction == TRACE_L_ROUND_MIDDLE) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_L_STRAIGHT) ||
+				(previousTraceAction == TRACE_L_ROUND_SOFT));
+	}
+	else if (prePrevTraceAction == TRACE_L_ROUND_TIGHT) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_L_STRAIGHT) ||
+				(previousTraceAction == TRACE_L_ROUND_SOFT) ||
+				(previousTraceAction == TRACE_L_ROUND_MIDDLE));
+	}
+	else if (prePrevTraceAction == TRACE_R_ROUND_SOFT) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_R_STRAIGHT));
+	}
+	else if (prePrevTraceAction == TRACE_R_ROUND_MIDDLE) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_R_STRAIGHT) ||
+				(previousTraceAction == TRACE_R_ROUND_SOFT));
+	}
+	else if (prePrevTraceAction == TRACE_R_ROUND_TIGHT) {
+		return ((previousTraceAction == TRACE_STRAIGHT) ||
+				(previousTraceAction == TRACE_R_STRAIGHT) ||
+				(previousTraceAction == TRACE_R_ROUND_SOFT) ||
+				(previousTraceAction == TRACE_R_ROUND_MIDDLE));
+	}
+	else {
+		return FALSE;
+	}
+}
+
+int getSmoothAction() {
+	
+	if (previousTraceAction == TRACE_L_STRAIGHT) {
+		return TRACE_R_STRAIGHT;
+	}
+	else if (previousTraceAction == TRACE_L_ROUND_SOFT) {
+		//return TRACE_R_STRAIGHT;
+		return TRACE_L_STRAIGHT;
+	}
+	else if (previousTraceAction == TRACE_L_ROUND_MIDDLE) {
+		//return TRACE_R_STRAIGHT;
+		return TRACE_L_ROUND_SOFT;
+	}
+	else if (previousTraceAction == TRACE_L_ROUND_TIGHT) {
+		//return TRACE_R_STRAIGHT;
+		return TRACE_L_ROUND_MIDDLE;
+	}
+	else if (previousTraceAction == TRACE_R_STRAIGHT) {
+		return TRACE_L_STRAIGHT;
+	}
+	else if (previousTraceAction == TRACE_R_ROUND_SOFT) {
+		//return TRACE_L_STRAIGHT;
+		return TRACE_R_STRAIGHT;
+	}
+	else if (previousTraceAction == TRACE_R_ROUND_MIDDLE) {
+		//return TRACE_L_STRAIGHT;
+		return TRACE_R_ROUND_SOFT;
+	}
+	else if (previousTraceAction == TRACE_R_ROUND_TIGHT) {
+		//return TRACE_L_STRAIGHT;
+		return TRACE_R_ROUND_MIDDLE;
+	}
+	else {
+		return TRACE_STRAIGHT;
+	}
+}
+
+/**
+ * 右カーブ実行
+ */
+void executeRightRound(void){
+	while (1) {
+		// ターン検出時は処理終了
+		if ((currentTraceAction == TRACE_L_TURN) ||
+			(currentTraceAction == TRACE_R_TURN)) {
+				break;
+		}
+	}
+}
+
+/**
  * 左旋回動作の初期化
  * 停止を実行して、途中で全て黒になったら直進モードにする
  * 基準以下の速度まで減速できたら、旋回を継続する
@@ -1122,30 +845,50 @@ void adjustTurnPosition(void) {
 	if (BaseSpeed <= 200 ) {
 		StraightLowMove();
 		_delay_ms(200);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 200 && BaseSpeed <= 300 ) {
+	} else if (BaseSpeed > 200 && BaseSpeed <= 300 ) {
 		StraightLowMove();
 		_delay_ms(150);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 300 && BaseSpeed <= 350 ) {
+	} else if (BaseSpeed > 300 && BaseSpeed <= 330 ) {
 		StraightLowMove();
-		_delay_ms(100);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 350 && BaseSpeed <= 380 ) {
-		StraightLowMove();
-		_delay_ms(50);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 430 && BaseSpeed <= 450 ) {
+		_delay_ms(60);	// 10ms 間隔を空ける
+	} else if (BaseSpeed > 330 && BaseSpeed <= 350 ) {
+		//StraightLowMove();
+		//_delay_ms(50);	// 10ms 間隔を空ける
+	} else if (BaseSpeed > 350 && BaseSpeed <= 450 ) {
 		BackLowMove();
-		_delay_ms(50);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 450 && BaseSpeed <= 480 ) {
-		BackLowMove();
-		_delay_ms(100);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 480 && BaseSpeed <= 500 ) {
-		BackLowMove();
-		_delay_ms(200);	// 10ms 間隔を空ける
-	} else if (BaseSpeed < 480 && BaseSpeed <= 500 ) {
+		_delay_ms(250);	// 10ms 間隔を空ける
+	} else if (BaseSpeed > 450 && BaseSpeed <= 480 ) {
 		BackLowMove();
 		_delay_ms(300);	// 10ms 間隔を空ける
+	} else if (BaseSpeed > 480 && BaseSpeed <= 500 ) {
+		BackLowMove();
+		_delay_ms(350);	// 10ms 間隔を空ける
+	} else if (BaseSpeed > 500 && BaseSpeed <= 530 ) {
+		BackLowMove();
+		_delay_ms(400);	// 10ms 間隔を空ける
 	}
 	StopMove();
 }
+
+/**
+ * 速度に応じた旋回復帰後のディレイ時間を取得する。
+ */
+void executeDelay(void) {
+	if (BaseSpeed <= 200 ) {
+		_delay_ms(400);
+	} else if (BaseSpeed > 200 && BaseSpeed <= 250 ) {
+		_delay_ms(350);
+	} else if (BaseSpeed > 250 && BaseSpeed <= 300 ) {
+		_delay_ms(300);
+	} else if (BaseSpeed > 300 && BaseSpeed <= 350 ) {
+		_delay_ms(250);
+	} else if (BaseSpeed > 350 && BaseSpeed <= 400 ) {
+		_delay_ms(200);
+	} else {
+		_delay_ms(400);
+	}
+}
+
 /**
 * ショートカットの処理
 * @brief ショートカットの処理
