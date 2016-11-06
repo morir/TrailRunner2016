@@ -180,9 +180,13 @@ void executeTraceProcess(void) {
 	static int sensorPattern = BIT_000000;
     static int counter = 0;
 	
+#ifdef _MODE_SKIP_
+	//ショートカットモードの場合は、初期動作不要
+#else
 	//初期動作（少しだけ直進）
 	StraightMove();
 	_delay_ms(100);	// 10ms 間隔を空ける
+#endif /* _MODE_SKIP_ */
 
 	while (1) {
 
@@ -905,44 +909,102 @@ void executeSkipAction(void) {
 	LOG_INFO("***** executeSkipAction START!! *****\r\n");
 
 	static int sensorPattern = BIT_000000;
+    static int counter = 0;
 
 	// 初期動作（直進）
 	StraightMove();
 	_delay_ms(100);	// 10ms 間隔を空ける
 
 	while (1) {
+		StraightMove();
 
 		// センサ値のビットパターンを取得する。
-		sensorPattern = getSensorPattern();
+		getSensors();
+		sensorPattern = IR_BitPattern;
 
-		// センサ値のパターンが全黒であればループを抜ける。
-		if (sensorPattern == BIT_111111 || sensorPattern == BIT_111110) {
+		// センサ値のパターンが全黒 or 直角ライン判定であればループを抜ける。
+		if (sensorPattern == BIT_111111 || sensorPattern == BIT_111110 ||
+			sensorPattern == BIT_011111 || sensorPattern == BIT_011110 ||
+			sensorPattern == BIT_001111 || sensorPattern == BIT_001110 ||
+			sensorPattern == BIT_000111 || sensorPattern == BIT_000110 ||
+			sensorPattern == BIT_111101 || sensorPattern == BIT_111100 ||
+			sensorPattern == BIT_111001 || sensorPattern == BIT_111000 ||
+			sensorPattern == BIT_110001 || sensorPattern == BIT_110000
+			) {
 			break;
 		}
-		_delay_ms(5);// delayTimeの間隔を空ける
+#ifdef LOG_INFO_ON
+		if ((counter % 1) == 0) {
+			BaseSpeed = BaseSpeed + 1;
+			counter = 0;
+		}
+#else
+		if ((counter % 5) == 0) {
+			BaseSpeed = BaseSpeed + 3;
+			counter = 0;
+		}
+#endif /* _MODE_SKIP_ */
 	}
 
-	_delay_ms(5);// delayTimeの間隔を空ける
+	//旋回判定されたら停止を実行
+	stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+
+	//停止が確定したらベース速度に応じて、前進or後進を実行
+	adjustTurnPosition();
+
+	//ベース速度を初期化
+	BaseSpeed = BASE_SPEED_INIT_VAL;
 
 	// 左旋回
 	LeftTurnMove();
-	_delay_ms(500);	// 500ms 間隔を空ける
-
-	while (1) {
-
-		// センサ値のビットパターンを取得する。
-		sensorPattern = getSensorPattern();
-
-		// センサ値のパターンが真ん中黒であればループを抜ける。
-		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+	while(1) {
+		getSensors();
+		sensorPattern = IR_BitPattern;
+		//旋回動作を抜けるための条件を判定
+		if (
+			sensorPattern == BIT_010000 || sensorPattern == BIT_010001 ||
+			sensorPattern == BIT_011000 || sensorPattern == BIT_011001 ||
+			sensorPattern == BIT_001000 || sensorPattern == BIT_001001 ||
+			sensorPattern == BIT_001100 || sensorPattern == BIT_001101 ||
+			sensorPattern == BIT_000100 || sensorPattern == BIT_000101
+			) {
+			LED_on(2);
+			//中央のセンサーが黒なら停止を実行
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 			break;
 		}
-		_delay_ms(5);// delayTimeの間隔を空ける
+	}
+	
+	//旋回停止判定後の止まった位置でセンサーが中央なら逆旋回終了
+	getSensors();
+	sensorPattern = IR_BitPattern;
+	if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+		//中央センサーなので、直進に設定して抜ける
+		StraightMove();
+		return;
+		} else if (sensorPattern == BIT_010000 || sensorPattern == BIT_010001) {
+		//左センサーなので、左曲りに設定して抜ける
+		LeftSoftRoundMove();
+		return;
 	}
 
-	//左旋回中復帰時の動作
-	RightTurnMove();//逆回転
-	_delay_ms(100);	// 100ms 逆回転を入力（強さと時間は調整必要）
+	//センサーを中央に戻すため遅い旋回を実行
+	RightTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
+	while(1) {
+		//逆旋回動作を抜けるための条件を判定
+		getSensors();
+		sensorPattern = IR_BitPattern;
+		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
+			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
+			StraightMove();
+			return;
+		} else if ( sensorPattern == BIT_010000 ||	sensorPattern == BIT_010001 ||
+			sensorPattern == BIT_100000 ||	sensorPattern == BIT_100001 ) {
+			//既に逆側まで旋回していたら（想定よりも早く解除できてしまった場合など）
+			LeftMiddleRoundMove();
+			return;
+		}
+	}
 
 	LOG_INFO("***** executeSkipAction END!! *****\r\n");
 
