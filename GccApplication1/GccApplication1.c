@@ -371,21 +371,22 @@ int getSensorPattern(void) {
 	// 判定条件数を減らすためゴール判定用センサ値をフィルタリングする。
 	ptn = ((IR_BitPattern >> 1) << 1);
 
-	// ゴール判定（ゴール用センサを連続で規定数回検知し且つトレース用センサーが黒のとき）
-	if (IR[GOAL_JUDGE] >= 700) {
+	// ゴール判定カウント（ラインセンサーが白の時カウント）
+	if (IR[GOAL_JUDGE] >= COMPARE_VALUE_GOAL && (ptn == BIT_000000)) {
 		goalCounter++;
-		if (goalCounter >= 50 && 
-			( (IR_BitPattern == BIT_000011 ) ||
-			  (IR_BitPattern == BIT_000111 ) ||
-			  (IR_BitPattern == BIT_001111 ) ||
-			  (IR_BitPattern == BIT_011111 ) ||
-			  (IR_BitPattern == BIT_111111 )
-			)){
-			ptn = TRACE_FINALACTION;
-		}
 	} else {
 		//一度でも白なら判定解除
 		goalCounter = 0;
+	}
+
+	if (goalCounter >= 50 &&
+		( (IR_BitPattern == BIT_000011 ) ||
+		(IR_BitPattern == BIT_000111 ) ||
+		(IR_BitPattern == BIT_001111 ) ||
+		(IR_BitPattern == BIT_011111 ) ||
+		(IR_BitPattern == BIT_111111 )
+		)){
+		ptn = TRACE_FINALACTION;
 	}
 
 	return ptn;
@@ -534,7 +535,8 @@ int executeLeftTurn(void){
 	}
 
 	//旋回停止判定後の止まった位置でセンサーが中央なら逆旋回終了
-	sensorPattern = getSensorPattern();
+	getSensors();
+	sensorPattern = IR_BitPattern;
 	if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 		//中央センサーなので、直進に設定して抜ける
 		return TRACE_STRAIGHT;
@@ -548,7 +550,8 @@ int executeLeftTurn(void){
 	RightTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
 	while(1) {
 		//逆旋回動作を抜けるための条件を判定
-		sensorPattern = getSensorPattern();
+		getSensors();
+		sensorPattern = IR_BitPattern;
 		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 			return TRACE_STRAIGHT;
@@ -564,7 +567,8 @@ int executeLeftTurn(void){
 	LeftTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
 	while(1) {
 		//逆旋回動作を抜けるための条件を判定
-		sensorPattern = getSensorPattern();
+		getSensors();
+		sensorPattern = IR_BitPattern;
 		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 			return TRACE_STRAIGHT;
@@ -612,7 +616,8 @@ int executeRightTurn(void){
 	}
 
 	//旋回停止判定後の止まった位置でセンサーが中央なら逆旋回終了
-	sensorPattern = getSensorPattern();
+	getSensors();
+	sensorPattern = IR_BitPattern;
 	if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 		//中央センサーなので、直進に設定して抜ける
 		return TRACE_STRAIGHT;
@@ -626,7 +631,8 @@ int executeRightTurn(void){
 	LeftTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
 	while(1) {
 		//逆旋回動作を抜けるための条件を判定
-		sensorPattern = getSensorPattern();
+		getSensors();
+		sensorPattern = IR_BitPattern;
 		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 			return TRACE_STRAIGHT;
@@ -645,7 +651,8 @@ int executeRightTurn(void){
 	RightTurnSlowMove(SLOW_TURN_RATE_BY_BASE);
 	while(1) {
 		//逆旋回動作を抜けるための条件を判定
-		sensorPattern = getSensorPattern();
+		getSensors();
+		sensorPattern = IR_BitPattern;
 		if (sensorPattern == BIT_001000 || sensorPattern == BIT_001001) {
 			stopMoveLessThanVal(STOP_JUDGE_MAX_LIMIT);
 			return TRACE_STRAIGHT;
