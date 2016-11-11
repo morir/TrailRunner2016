@@ -137,7 +137,7 @@ int ActionTable[] = {
 	/* 28:BIT_11100x */	TRACE_L_TURN,
 	/* 29:BIT_11101x */	TRACE_L_ROUND_MIDDLE,
 	/* 30:BIT_11110x */	TRACE_L_TURN,
-	/* 31:BIT_11111x */	TRACE_STRAIGHT
+	/* 31:BIT_11111x */	TRACE_SLOW_STRAIGHT
 };
 
 /**
@@ -263,6 +263,10 @@ void executeTraceProcess(void) {
 		}
 		else if (isLeftRound() || isRightRound()) {
 			executeRound();
+		}
+		else if (previousTraceAction == TRACE_SLOW_STRAIGHT && sensorPattern == BIT_000000) {
+			//前回ゆっくり直進でセンサーが白だったら、ゆっくりを継続
+			currentTraceAction = TRACE_SLOW_STRAIGHT;
 		}
 			
 		if (doesNeedToResetSpeed()) {
