@@ -216,8 +216,8 @@ void StraightLowMove(void) {
 }
 
 void BackLowMove(void) {
-	int leftSpeed = (1024 + SLOW_STRAIGHT_VAL);
-	int rightSpeed = SLOW_STRAIGHT_VAL;
+	int leftSpeed = (1024 + SLOW_BACK_VAL);
+	int rightSpeed = SLOW_BACK_VAL;
 
 	MotorControl( LEFT_MOTOR, leftSpeed);
 	MotorControl( RIGHT_MOTOR, rightSpeed );
